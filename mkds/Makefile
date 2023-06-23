@@ -37,7 +37,7 @@ ARCH := -marm -mthumb-interwork -march=armv5te -mtune=arm946e-s
 CFLAGS   := -g -Wall -Werror -O3 \
             $(ARCH) $(INCLUDE) -DARM9
 CXXFLAGS := $(CFLAGS) -fno-rtti -fno-exceptions
-ASFLAGS  := -g $(ARCH)
+ASFLAGS  := -g $(ARCH) $(INCLUDE)
 LDFLAGS   = -specs=ds_arm9.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
 
 #---------------------------------------------------------------------------------

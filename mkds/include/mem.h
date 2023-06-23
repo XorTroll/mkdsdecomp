@@ -17,4 +17,11 @@ void Mem_SetExpHeapGroupId(Mem_HeapHandle heap_handle, u16 group_id);
 size_t Mem_GetExpHeapTotalFreeSize(Mem_HeapHandle heap_handle);
 void Mem_ResizeExpHeap(Mem_HeapHandle heap_handle, void *ptr, size_t size);
 
+int Mem_CreateFrameHeapState(Mem_HeapHandle heap_handle, u32 state_id);
+int Mem_RestoreFrameHeapState(Mem_HeapHandle heap_handle, u32 state_id);
+
+Mem_HeapHandle Mem_CreateChildExpHeap(Mem_HeapHandle parent_heap_handle);
+Mem_HeapHandle Mem_CreateChildFrameHeapFromHead(Mem_HeapHandle parent_heap_handle, size_t size);
+Mem_HeapHandle Mem_CreateChildFrameHeapFromTail(Mem_HeapHandle parent_heap_handle, size_t size);
+
 #endif
