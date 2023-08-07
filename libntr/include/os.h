@@ -1,5 +1,5 @@
-#ifndef _MKDS_OS_H
-#define _MKDS_OS_H
+#ifndef _NTR_OS_H
+#define _NTR_OS_H
 
 #include "base.h"
 

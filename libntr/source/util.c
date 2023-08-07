@@ -10,10 +10,10 @@ void Util_FillMemory32(int val, void *src, size_t size) {
     }
 }
 
-#define _MKDS_UTIL_INTRUSIVE_LIST_ITEM_NODE(list, item) ((Util_IntrusiveListNode*)(item + list->item_list_node_offset))
+#define _NTR_UTIL_INTRUSIVE_LIST_ITEM_NODE(list, item) ((Util_IntrusiveListNode*)(item + list->item_list_node_offset))
 
 void Util_IntrusiveList_InsertFirstItem(Util_IntrusiveList *self, void *item) {
-    Util_IntrusiveListNode *item_node = _MKDS_UTIL_INTRUSIVE_LIST_ITEM_NODE(self, item);
+    Util_IntrusiveListNode *item_node = _NTR_UTIL_INTRUSIVE_LIST_ITEM_NODE(self, item);
     item_node->item_next = NULL;
     item_node->item_prev = NULL;
 
@@ -35,7 +35,7 @@ void *Util_IntrusiveList_GetPrevItem(Util_IntrusiveList *self, void *item) {
     // NOTE: this code assumes that the item is actually part of the list
     // (otherwise it would make little sense)
     if(item != NULL) {
-        return _MKDS_UTIL_INTRUSIVE_LIST_ITEM_NODE(self, item)->item_prev;
+        return _NTR_UTIL_INTRUSIVE_LIST_ITEM_NODE(self, item)->item_prev;
     }
     else {
         // Return end of the list
@@ -78,9 +78,9 @@ void *Util_IntrusiveList_GetAtIndex(Util_IntrusiveList *self, int idx) {
 
 void Util_IntrusiveList_InsertFirst(Util_IntrusiveList *self, void *item) {
     if(self->item_list_head != NULL) {
-        _MKDS_UTIL_INTRUSIVE_LIST_ITEM_NODE(self, item)->item_prev = NULL;
-        _MKDS_UTIL_INTRUSIVE_LIST_ITEM_NODE(self, item)->item_next = self->item_list_head;
-        _MKDS_UTIL_INTRUSIVE_LIST_ITEM_NODE(self, self->item_list_head)->item_prev = item;
+        _NTR_UTIL_INTRUSIVE_LIST_ITEM_NODE(self, item)->item_prev = NULL;
+        _NTR_UTIL_INTRUSIVE_LIST_ITEM_NODE(self, item)->item_next = self->item_list_head;
+        _NTR_UTIL_INTRUSIVE_LIST_ITEM_NODE(self, self->item_list_head)->item_prev = item;
         self->item_list_head = item;
 
         ++self->item_count;
@@ -93,9 +93,9 @@ void Util_IntrusiveList_InsertFirst(Util_IntrusiveList *self, void *item) {
 
 void Util_IntrusiveList_InsertLast(Util_IntrusiveList *self, void *item) {
     if(self->item_list_head != NULL) {
-        _MKDS_UTIL_INTRUSIVE_LIST_ITEM_NODE(self, item)->item_prev = self->item_list_tail;
-        _MKDS_UTIL_INTRUSIVE_LIST_ITEM_NODE(self, item)->item_next = NULL;
-        _MKDS_UTIL_INTRUSIVE_LIST_ITEM_NODE(self, self->item_list_tail)->item_next = item;
+        _NTR_UTIL_INTRUSIVE_LIST_ITEM_NODE(self, item)->item_prev = self->item_list_tail;
+        _NTR_UTIL_INTRUSIVE_LIST_ITEM_NODE(self, item)->item_next = NULL;
+        _NTR_UTIL_INTRUSIVE_LIST_ITEM_NODE(self, self->item_list_tail)->item_next = item;
         self->item_list_tail = item;
 
         ++self->item_count;
@@ -107,16 +107,16 @@ void Util_IntrusiveList_InsertLast(Util_IntrusiveList *self, void *item) {
 }
 
 void Util_IntrusiveList_RemoveItem(Util_IntrusiveList *self, void *item) {
-    Util_IntrusiveListNode *item_node = _MKDS_UTIL_INTRUSIVE_LIST_ITEM_NODE(self, item);
+    Util_IntrusiveListNode *item_node = _NTR_UTIL_INTRUSIVE_LIST_ITEM_NODE(self, item);
     if(item_node->item_prev != NULL) {
-        _MKDS_UTIL_INTRUSIVE_LIST_ITEM_NODE(self, item_node->item_prev)->item_next = item_node->item_next;
+        _NTR_UTIL_INTRUSIVE_LIST_ITEM_NODE(self, item_node->item_prev)->item_next = item_node->item_next;
     }
     else {
         self->item_list_head = item_node->item_next;
     }
 
     if(item_node->item_next != NULL) {
-        _MKDS_UTIL_INTRUSIVE_LIST_ITEM_NODE(self, item_node->item_next)->item_prev = item_node->item_prev;
+        _NTR_UTIL_INTRUSIVE_LIST_ITEM_NODE(self, item_node->item_next)->item_prev = item_node->item_prev;
     }
     else {
         self->item_list_tail = item_node->item_prev;

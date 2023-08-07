@@ -10,12 +10,12 @@ typedef struct Mem_MemoryRegion {
     uintptr_t end;
 } Mem_MemoryRegion;
 
-#define _MKDS_MEM_REGION_SIZE(region) (size_t)((region)->end - (region)->start)
+#define _NTR_MEM_REGION_SIZE(region) (size_t)((region)->end - (region)->start)
 
-#define _MKDS_MEM_EXP_HEAP_HEAD_MAGIC 0x45585048 // "EXPH"
+#define _NTR_MEM_EXP_HEAP_HEAD_MAGIC 0x45585048 // "EXPH"
 
-#define _MKDS_MEM_EXP_HEAP_FREE_BLOCK_HEAD_MAGIC 0x4652 // "FR"
-#define _MKDS_MEM_EXP_HEAP_USED_BLOCK_HEAD_MAGIC 0x5544 // "UD"
+#define _NTR_MEM_EXP_HEAP_FREE_BLOCK_HEAD_MAGIC 0x4652 // "FR"
+#define _NTR_MEM_EXP_HEAP_USED_BLOCK_HEAD_MAGIC 0x5544 // "UD"
 
 typedef struct Mem_ExpHeapMemoryBlockHead {
     u16 magic;
@@ -26,14 +26,14 @@ typedef struct Mem_ExpHeapMemoryBlockHead {
 } Mem_ExpHeapMemoryBlockHead;
 _Static_assert(sizeof(Mem_ExpHeapMemoryBlockHead) == 0x10);
 
-#define _MKDS_MEM_EXP_GET_BLOCK(block_head) (((uintptr_t)block_head) + sizeof(Mem_ExpHeapMemoryBlockHead))
-#define _MKDS_MEM_EXP_GET_PTR_BLOCK_HEAD(ptr) ((Mem_ExpHeapMemoryBlockHead*)(((uintptr_t)ptr) - sizeof(Mem_ExpHeapMemoryBlockHead)))
+#define _NTR_MEM_EXP_GET_BLOCK(block_head) (((uintptr_t)block_head) + sizeof(Mem_ExpHeapMemoryBlockHead))
+#define _NTR_MEM_EXP_GET_PTR_BLOCK_HEAD(ptr) ((Mem_ExpHeapMemoryBlockHead*)(((uintptr_t)ptr) - sizeof(Mem_ExpHeapMemoryBlockHead)))
 
-#define _MKDS_MEM_EXP_GET_MEMORY_BLOCK_ALIGNMENT_PADDING(block_head) (u16)(((block_head)->attributes >> 8) & 0x7F)
+#define _NTR_MEM_EXP_GET_MEMORY_BLOCK_ALIGNMENT_PADDING(block_head) (u16)(((block_head)->attributes >> 8) & 0x7F)
 
 typedef enum Mem_CreateOption {
     Mem_CreateOption_None = 0,
-    Mem_CreateOption_ZeroClear = MKDS_BIT(0)
+    Mem_CreateOption_ZeroClear = NTR_BIT(0)
 } Mem_CreateOption;
 
 typedef enum Mem_AllocationMode {
@@ -59,7 +59,7 @@ typedef struct Mem_ExpHeapHead {
 } Mem_ExpHeapHead;
 _Static_assert(sizeof(Mem_ExpHeapHead) == 0x14);
 
-#define _MKDS_MEM_FRAME_HEAP_HEAD_MAGIC 0x46524D48 // "FRMH"
+#define _NTR_MEM_FRAME_HEAP_HEAD_MAGIC 0x46524D48 // "FRMH"
 
 typedef struct Mem_FrameHeapState {
     u32 id;
@@ -87,9 +87,9 @@ struct Mem_HeapHead {
 };
 _Static_assert(sizeof(Mem_HeapHead) == 0x38);
 
-#define _MKDS_EXP_GET_BASE_HEAP_HEAD(exp_heap_head_p) ((Mem_HeapHead*)((uintptr_t)exp_heap_head_p - __builtin_offsetof(Mem_HeapHead, exp_heap_head)))
+#define _NTR_EXP_GET_BASE_HEAP_HEAD(exp_heap_head_p) ((Mem_HeapHead*)((uintptr_t)exp_heap_head_p - __builtin_offsetof(Mem_HeapHead, exp_heap_head)))
 
-#define _MKDS_FRAME_GET_BASE_HEAP_HEAD(frm_heap_head_p) ((Mem_HeapHead*)((uintptr_t)frm_heap_head_p - __builtin_offsetof(Mem_HeapHead, frm_heap_head)))
+#define _NTR_FRAME_GET_BASE_HEAP_HEAD(frm_heap_head_p) ((Mem_HeapHead*)((uintptr_t)frm_heap_head_p - __builtin_offsetof(Mem_HeapHead, frm_heap_head)))
 
 Mem_HeapHead *Mem_FindTopParentHeapHead(Util_IntrusiveList *list, Mem_HeapHead *heap_head) {
     Mem_HeapHead *item_list_head = Util_IntrusiveList_GetNextItem(list, NULL);
@@ -135,8 +135,8 @@ Util_IntrusiveList *Mem_FindTopParentHeapHeadList(Mem_HeapHead *heap_head) {
 }
 
 void Mem_GetMemoryBlockRegion(Mem_MemoryRegion *out_region, Mem_ExpHeapMemoryBlockHead *block_head) {
-    out_region->start = (uintptr_t)block_head - (uintptr_t)(_MKDS_MEM_EXP_GET_MEMORY_BLOCK_ALIGNMENT_PADDING(block_head));
-    out_region->end = _MKDS_MEM_EXP_GET_BLOCK(block_head) + block_head->block_size;
+    out_region->start = (uintptr_t)block_head - (uintptr_t)(_NTR_MEM_EXP_GET_MEMORY_BLOCK_ALIGNMENT_PADDING(block_head));
+    out_region->end = _NTR_MEM_EXP_GET_BLOCK(block_head) + block_head->block_size;
 }
 
 void Mem_InitializeHeapHead(Mem_HeapHead *out_heap_head, u32 magic, uintptr_t start, uintptr_t end, u8 option) {
@@ -168,7 +168,7 @@ void Mem_FinalizeHeapHead(Mem_HeapHead *heap_head) {
 
 size_t Mem_Frame_GetAllocatableSize(Mem_HeapHead *heap_head, ssize_t align) {
     size_t actual_align = abs(align);
-    uintptr_t cur_heap_start_aligned = MKDS_UTIL_ALIGN_UP(heap_head->frm_heap_head.cur_heap_region.start, actual_align);
+    uintptr_t cur_heap_start_aligned = NTR_UTIL_ALIGN_UP(heap_head->frm_heap_head.cur_heap_region.start, actual_align);
     if(cur_heap_start_aligned <= heap_head->frm_heap_head.cur_heap_region.end) {
         return heap_head->frm_heap_head.cur_heap_region.end - cur_heap_start_aligned;
     }
@@ -178,12 +178,12 @@ size_t Mem_Frame_GetAllocatableSize(Mem_HeapHead *heap_head, ssize_t align) {
 }
 
 void *Mem_Frame_AllocFromHead(Mem_FrameHeapHead *frm_heap_head, size_t size, size_t align) {
-    uintptr_t cur_ptr_start_aligned = MKDS_UTIL_ALIGN_UP(frm_heap_head->cur_heap_region.start, align);
+    uintptr_t cur_ptr_start_aligned = NTR_UTIL_ALIGN_UP(frm_heap_head->cur_heap_region.start, align);
     uintptr_t cur_ptr_end = cur_ptr_start_aligned + size;
     if(cur_ptr_end > frm_heap_head->cur_heap_region.end) {
         return 0;
     }
-    if(_MKDS_FRAME_GET_BASE_HEAP_HEAD(frm_heap_head)->option & Mem_CreateOption_ZeroClear) {
+    if(_NTR_FRAME_GET_BASE_HEAP_HEAD(frm_heap_head)->option & Mem_CreateOption_ZeroClear) {
         Util_FillMemory32(0, (void*)frm_heap_head->cur_heap_region.start, cur_ptr_end - frm_heap_head->cur_heap_region.start);
     }
     void *ptr = (void*)cur_ptr_start_aligned;
@@ -192,11 +192,11 @@ void *Mem_Frame_AllocFromHead(Mem_FrameHeapHead *frm_heap_head, size_t size, siz
 }
 
 void *Mem_Frame_AllocFromTail(Mem_FrameHeapHead *frm_heap_head, size_t size, size_t align) {
-    uintptr_t cur_heap_end_aligned = MKDS_UTIL_ALIGN_DOWN(frm_heap_head->cur_heap_region.end - size, align);
+    uintptr_t cur_heap_end_aligned = NTR_UTIL_ALIGN_DOWN(frm_heap_head->cur_heap_region.end - size, align);
     if(cur_heap_end_aligned < frm_heap_head->cur_heap_region.start) {
         return 0;
     }
-    if(_MKDS_FRAME_GET_BASE_HEAP_HEAD(frm_heap_head)->option & Mem_CreateOption_ZeroClear) {
+    if(_NTR_FRAME_GET_BASE_HEAP_HEAD(frm_heap_head)->option & Mem_CreateOption_ZeroClear) {
         Util_FillMemory32(0, (void*)cur_heap_end_aligned, frm_heap_head->cur_heap_region.end - cur_heap_end_aligned);
     }
     void *ptr = (void*)cur_heap_end_aligned;
@@ -209,7 +209,7 @@ void *Mem_Frame_Allocate(Mem_HeapHead *heap_head, size_t size, ssize_t align) {
         size = 1;
     }
 
-    size_t aligned_size = MKDS_UTIL_ALIGN_UP(size, 0x4);
+    size_t aligned_size = NTR_UTIL_ALIGN_UP(size, 0x4);
 
     if(align < 0) {
         return Mem_Frame_AllocFromTail(&heap_head->frm_heap_head, aligned_size, -align);
@@ -220,7 +220,7 @@ void *Mem_Frame_Allocate(Mem_HeapHead *heap_head, size_t size, ssize_t align) {
 }
 
 Mem_HeapHandle Mem_Frame_Initialize(Mem_HeapHead *heap_head, uintptr_t end, int option) {
-    Mem_InitializeHeapHead(heap_head, _MKDS_MEM_FRAME_HEAP_HEAD_MAGIC, (uintptr_t)heap_head + sizeof(Mem_HeapHead), end, option);
+    Mem_InitializeHeapHead(heap_head, _NTR_MEM_FRAME_HEAP_HEAD_MAGIC, (uintptr_t)heap_head + sizeof(Mem_HeapHead), end, option);
     heap_head->frm_heap_head.cur_heap_region.start = heap_head->heap_region.start;
     heap_head->frm_heap_head.cur_heap_region.end = heap_head->heap_region.end;
     heap_head->frm_heap_head.cur_state = NULL;
@@ -228,8 +228,8 @@ Mem_HeapHandle Mem_Frame_Initialize(Mem_HeapHead *heap_head, uintptr_t end, int 
 }
 
 Mem_HeapHandle Mem_Frame_Create(void *ptr, size_t size, int option) {
-    uintptr_t aligned_start = MKDS_UTIL_ALIGN_UP((uintptr_t)ptr, 0x4);
-    uintptr_t aligned_end = MKDS_UTIL_ALIGN_DOWN((uintptr_t)(ptr + size), 0x4);
+    uintptr_t aligned_start = NTR_UTIL_ALIGN_UP((uintptr_t)ptr, 0x4);
+    uintptr_t aligned_end = NTR_UTIL_ALIGN_DOWN((uintptr_t)(ptr + size), 0x4);
 
     if((aligned_start <= aligned_end) && ((aligned_end - aligned_start) >= 0x30)) {
         Mem_HeapHead *heap_head = (Mem_HeapHead*)aligned_start;
@@ -260,12 +260,12 @@ Mem_HeapHandle Mem_Exp_Initialize(uintptr_t start, uintptr_t end, u8 option) {
     Mem_HeapHead *heap_head = (Mem_HeapHead*)start;
     Mem_ExpHeapHead *exp_heap_head = &heap_head->exp_heap_head;
 
-    Mem_InitializeHeapHead(heap_head, _MKDS_MEM_EXP_HEAP_HEAD_MAGIC, start + sizeof(Mem_HeapHead), end, option);
+    Mem_InitializeHeapHead(heap_head, _NTR_MEM_EXP_HEAP_HEAD_MAGIC, start + sizeof(Mem_HeapHead), end, option);
     exp_heap_head->group_id = 0;
     exp_heap_head->alloc_mode &= ~0x1u;
     exp_heap_head->alloc_mode = Mem_AllocationMode_FirstFit;
 
-    Mem_ExpHeapMemoryBlockHead *start_free_block = Mem_Exp_InitializeMemoryBlock(&heap_head->heap_region, _MKDS_MEM_EXP_HEAP_FREE_BLOCK_HEAD_MAGIC);
+    Mem_ExpHeapMemoryBlockHead *start_free_block = Mem_Exp_InitializeMemoryBlock(&heap_head->heap_region, _NTR_MEM_EXP_HEAP_FREE_BLOCK_HEAD_MAGIC);
     heap_head->exp_heap_head.free_list.list_head = start_free_block;
     heap_head->exp_heap_head.free_list.list_tail = start_free_block;
     heap_head->exp_heap_head.used_list.list_head = NULL;
@@ -274,8 +274,8 @@ Mem_HeapHandle Mem_Exp_Initialize(uintptr_t start, uintptr_t end, u8 option) {
 }
 
 Mem_HeapHandle Mem_Exp_Create(void *ptr, size_t size, u8 option) {
-    uintptr_t end = MKDS_UTIL_ALIGN_DOWN((uintptr_t)(ptr + size), 0x4);
-    uintptr_t start = MKDS_UTIL_ALIGN_UP((uintptr_t)ptr, 0x4);
+    uintptr_t end = NTR_UTIL_ALIGN_DOWN((uintptr_t)(ptr + size), 0x4);
+    uintptr_t start = NTR_UTIL_ALIGN_UP((uintptr_t)ptr, 0x4);
 
     if((start <= end) && ((end - start) >= 0x4C)) { // TODO: where does this size come from?
         return Mem_Exp_Initialize(start, end, option);
@@ -337,11 +337,11 @@ size_t Mem_Exp_GetAllocatableSize(Mem_HeapHead *heap_head, ssize_t align) {
     size_t min_offset = SIZE_MAX;
     if(cur_block_head != NULL) {
         do {
-            uintptr_t cur_block_start_aligned = MKDS_UTIL_ALIGN_UP(_MKDS_MEM_EXP_GET_BLOCK(cur_block_head), actual_align);
-            uintptr_t cur_block_end = _MKDS_MEM_EXP_GET_BLOCK(cur_block_head) + cur_block_head->block_size;
-            if((cur_block_start_aligned < cur_block_end) && (((max_allocatable_size < (cur_block_end - cur_block_start_aligned)) || (max_allocatable_size == (cur_block_end - cur_block_start_aligned))) && (min_offset > (cur_block_start_aligned - _MKDS_MEM_EXP_GET_BLOCK(cur_block_head))))) {
+            uintptr_t cur_block_start_aligned = NTR_UTIL_ALIGN_UP(_NTR_MEM_EXP_GET_BLOCK(cur_block_head), actual_align);
+            uintptr_t cur_block_end = _NTR_MEM_EXP_GET_BLOCK(cur_block_head) + cur_block_head->block_size;
+            if((cur_block_start_aligned < cur_block_end) && (((max_allocatable_size < (cur_block_end - cur_block_start_aligned)) || (max_allocatable_size == (cur_block_end - cur_block_start_aligned))) && (min_offset > (cur_block_start_aligned - _NTR_MEM_EXP_GET_BLOCK(cur_block_head))))) {
                 max_allocatable_size = cur_block_end - cur_block_start_aligned;
-                min_offset = cur_block_start_aligned - _MKDS_MEM_EXP_GET_BLOCK(cur_block_head);
+                min_offset = cur_block_start_aligned - _NTR_MEM_EXP_GET_BLOCK(cur_block_head);
             }
             cur_block_head = cur_block_head->next_block;
         } while(cur_block_head != NULL);
@@ -354,36 +354,36 @@ void *Mem_Exp_ConvertFreeBlockToUsedBlock(Mem_ExpHeapHead *exp_heap_head, Mem_Ex
     Mem_GetMemoryBlockRegion(&free_region_front, block_head);
 
     uintptr_t end = free_region_front.end;
-    free_region_front.end = (uintptr_t)_MKDS_MEM_EXP_GET_PTR_BLOCK_HEAD(block);
+    free_region_front.end = (uintptr_t)_NTR_MEM_EXP_GET_PTR_BLOCK_HEAD(block);
 
     Mem_MemoryRegion free_region_back;
     free_region_back.start = (uintptr_t)block + size;
     free_region_back.end = end;
     Mem_ExpHeapMemoryBlockHead *prev_block_head = Mem_ExpHeapMemoryBlockList_Remove(&exp_heap_head->free_list, block_head);
-    if(_MKDS_MEM_REGION_SIZE(&free_region_front) >= sizeof(Mem_ExpHeapMemoryBlockHead)) {
-        Mem_ExpHeapMemoryBlockHead *new_free_block = Mem_Exp_InitializeMemoryBlock(&free_region_front, _MKDS_MEM_EXP_HEAP_FREE_BLOCK_HEAD_MAGIC);
+    if(_NTR_MEM_REGION_SIZE(&free_region_front) >= sizeof(Mem_ExpHeapMemoryBlockHead)) {
+        Mem_ExpHeapMemoryBlockHead *new_free_block = Mem_Exp_InitializeMemoryBlock(&free_region_front, _NTR_MEM_EXP_HEAP_FREE_BLOCK_HEAD_MAGIC);
         prev_block_head = Mem_ExpHeapMemoryBlockList_Insert(&exp_heap_head->free_list, new_free_block, prev_block_head);
     }
     else {
         free_region_front.end = free_region_front.start;
     }
 
-    if(_MKDS_MEM_REGION_SIZE(&free_region_back) >= sizeof(Mem_ExpHeapMemoryBlockHead)) {
-        Mem_ExpHeapMemoryBlockHead *new_used_block = Mem_Exp_InitializeMemoryBlock(&free_region_front, _MKDS_MEM_EXP_HEAP_USED_BLOCK_HEAD_MAGIC);
+    if(_NTR_MEM_REGION_SIZE(&free_region_back) >= sizeof(Mem_ExpHeapMemoryBlockHead)) {
+        Mem_ExpHeapMemoryBlockHead *new_used_block = Mem_Exp_InitializeMemoryBlock(&free_region_front, _NTR_MEM_EXP_HEAP_USED_BLOCK_HEAD_MAGIC);
         Mem_ExpHeapMemoryBlockList_Insert(&exp_heap_head->free_list, new_used_block, prev_block_head);
     }
     else {
         free_region_back.end = free_region_back.start;
     }
 
-    if(_MKDS_EXP_GET_BASE_HEAP_HEAD(exp_heap_head)->option & Mem_CreateOption_ZeroClear) {
+    if(_NTR_EXP_GET_BASE_HEAP_HEAD(exp_heap_head)->option & Mem_CreateOption_ZeroClear) {
         Util_FillMemory32(0, (void*)free_region_front.end, free_region_back.start - free_region_front.end);
     }
 
     Mem_MemoryRegion used_region;
-    used_region.start = (uintptr_t)_MKDS_MEM_EXP_GET_PTR_BLOCK_HEAD(block);
+    used_region.start = (uintptr_t)_NTR_MEM_EXP_GET_PTR_BLOCK_HEAD(block);
     used_region.end = free_region_back.start;
-    Mem_ExpHeapMemoryBlockHead *used_block = Mem_Exp_InitializeMemoryBlock(&used_region, _MKDS_MEM_EXP_HEAP_USED_BLOCK_HEAD_MAGIC);
+    Mem_ExpHeapMemoryBlockHead *used_block = Mem_Exp_InitializeMemoryBlock(&used_region, _NTR_MEM_EXP_HEAP_USED_BLOCK_HEAD_MAGIC);
     
     // Set allocation direction
     used_block->attributes &= ~0x8000u;
@@ -418,18 +418,18 @@ int Mem_Exp_CoalesceFreedRegion(Mem_ExpHeapHead *heap_head, Mem_MemoryRegion *re
             }
         }
         if((uintptr_t)cur_free_block == region->end) {
-            free_region.end = _MKDS_MEM_EXP_GET_BLOCK(cur_free_block) + cur_free_block->block_size;
+            free_region.end = _NTR_MEM_EXP_GET_BLOCK(cur_free_block) + cur_free_block->block_size;
             Mem_ExpHeapMemoryBlockList_Remove(&heap_head->free_list, cur_free_block);
         }
     }
 
-    if((prev_free_block != NULL) && ((_MKDS_MEM_EXP_GET_BLOCK(prev_free_block) + prev_free_block->block_size) == region->start)) {
+    if((prev_free_block != NULL) && ((_NTR_MEM_EXP_GET_BLOCK(prev_free_block) + prev_free_block->block_size) == region->start)) {
         free_region.start = (uintptr_t)prev_free_block;
         prev_free_block = Mem_ExpHeapMemoryBlockList_Remove(&heap_head->free_list, prev_free_block);
     }
 
-    if(_MKDS_MEM_REGION_SIZE(&free_region) >= sizeof(Mem_ExpHeapMemoryBlockHead)) {
-        Mem_ExpHeapMemoryBlockHead *new_free_block = Mem_Exp_InitializeMemoryBlock(&free_region, _MKDS_MEM_EXP_HEAP_FREE_BLOCK_HEAD_MAGIC);
+    if(_NTR_MEM_REGION_SIZE(&free_region) >= sizeof(Mem_ExpHeapMemoryBlockHead)) {
+        Mem_ExpHeapMemoryBlockHead *new_free_block = Mem_Exp_InitializeMemoryBlock(&free_region, _NTR_MEM_EXP_HEAP_FREE_BLOCK_HEAD_MAGIC);
         Mem_ExpHeapMemoryBlockList_Insert(&heap_head->free_list, new_free_block, prev_free_block);
         return 1;
     }
@@ -448,8 +448,8 @@ void *Mem_Exp_AllocateFromHead(Mem_HeapHead *heap_head, size_t size, size_t alig
     if(cur_free_block_head != NULL) {
         do {
             size_t cur_block_size = cur_free_block_head->block_size;
-            uintptr_t cur_block = _MKDS_MEM_EXP_GET_BLOCK(cur_free_block_head);
-            uintptr_t block_offset = MKDS_UTIL_ALIGN_UP(_MKDS_MEM_EXP_GET_BLOCK(cur_free_block_head), align);
+            uintptr_t cur_block = _NTR_MEM_EXP_GET_BLOCK(cur_free_block_head);
+            uintptr_t block_offset = NTR_UTIL_ALIGN_UP(_NTR_MEM_EXP_GET_BLOCK(cur_free_block_head), align);
             // Check if the data would fit in this block
             if((cur_block_size >= (size + block_offset - cur_block)) && (best_size > cur_block_size)) {
                 found_block_head = cur_free_block_head;
@@ -490,8 +490,8 @@ void *Mem_Exp_AllocateFromTail(Mem_HeapHead *heap_head, size_t size, size_t alig
     if(cur_free_block_head != NULL) {
         do {
             size_t cur_block_size = cur_free_block_head->block_size;
-            uintptr_t cur_block = _MKDS_MEM_EXP_GET_BLOCK(cur_free_block_head);
-            uintptr_t block_offset = MKDS_UTIL_ALIGN_DOWN(_MKDS_MEM_EXP_GET_BLOCK(cur_free_block_head) + cur_block_size - size, align);
+            uintptr_t cur_block = _NTR_MEM_EXP_GET_BLOCK(cur_free_block_head);
+            uintptr_t block_offset = NTR_UTIL_ALIGN_DOWN(_NTR_MEM_EXP_GET_BLOCK(cur_free_block_head) + cur_block_size - size, align);
             // Check if the data would fit in this block
             if(((block_offset - cur_block) >= 0) && (best_size > cur_block_size)) {
                 found_block_head = cur_free_block_head;
@@ -519,7 +519,7 @@ void *Mem_Exp_Allocate(Mem_HeapHead *heap_head, size_t size, ssize_t align) {
         size = 1;
     }
 
-    size_t aligned_size = MKDS_UTIL_ALIGN_UP(size, 0x4);
+    size_t aligned_size = NTR_UTIL_ALIGN_UP(size, 0x4);
     // Negative align value means allocating from tail instead of head
     if(align < 0) {
         return Mem_Exp_AllocateFromTail(heap_head, aligned_size, -align);
@@ -531,7 +531,7 @@ void *Mem_Exp_Allocate(Mem_HeapHead *heap_head, size_t size, ssize_t align) {
 
 void Mem_Exp_Free(Mem_HeapHead *heap_head, void *ptr) {
     Mem_MemoryRegion region;
-    Mem_ExpHeapMemoryBlockHead *block_head = _MKDS_MEM_EXP_GET_PTR_BLOCK_HEAD(ptr);
+    Mem_ExpHeapMemoryBlockHead *block_head = _NTR_MEM_EXP_GET_PTR_BLOCK_HEAD(ptr);
     Mem_GetMemoryBlockRegion(&region, block_head);
 
     Mem_ExpHeapMemoryBlockList_Remove(&heap_head->exp_heap_head.used_list, block_head);
@@ -550,10 +550,10 @@ Mem_HeapHandle Mem_CreateExpHeap(void *ptr, size_t size) {
 
 void Mem_DestroyHeap(Mem_HeapHandle heap_handle) {
     // Dispose this heap head
-    if(heap_handle->magic == _MKDS_MEM_EXP_HEAP_HEAD_MAGIC) {
+    if(heap_handle->magic == _NTR_MEM_EXP_HEAP_HEAD_MAGIC) {
         return Mem_Exp_Finalize(heap_handle);
     }
-    else if(heap_handle->magic == _MKDS_MEM_FRAME_HEAP_HEAD_MAGIC) {
+    else if(heap_handle->magic == _NTR_MEM_FRAME_HEAP_HEAD_MAGIC) {
         return Mem_Frame_Finalize(heap_handle);
     }
 
@@ -561,7 +561,7 @@ void Mem_DestroyHeap(Mem_HeapHandle heap_handle) {
     Mem_HeapHead *parent_heap_head = Mem_FindGlobalTopParentHeapHead(heap_handle);
     if(parent_heap_head != NULL) {
         // Since the heap head ptr is already the start of its allocated data, just free it (only needed with EXP heap heads)
-        if(parent_heap_head->magic == _MKDS_MEM_EXP_HEAP_HEAD_MAGIC) {
+        if(parent_heap_head->magic == _NTR_MEM_EXP_HEAP_HEAD_MAGIC) {
             Mem_Exp_Free(parent_heap_head, heap_handle);
         }
     }
@@ -570,10 +570,10 @@ void Mem_DestroyHeap(Mem_HeapHandle heap_handle) {
 void *Mem_AllocateHeap(Mem_HeapHandle heap_handle, size_t size) {
     // Basically 'Mem_AllocateHeapAligned(heap_handle, size, 4)'
 
-    if(heap_handle->magic == _MKDS_MEM_EXP_HEAP_HEAD_MAGIC) {
+    if(heap_handle->magic == _NTR_MEM_EXP_HEAP_HEAD_MAGIC) {
         return Mem_Exp_Allocate(heap_handle, size, 4);
     }
-    if(heap_handle->magic == _MKDS_MEM_FRAME_HEAP_HEAD_MAGIC) {
+    if(heap_handle->magic == _NTR_MEM_FRAME_HEAP_HEAD_MAGIC) {
         return Mem_Frame_Allocate(heap_handle, size, 4);
     }
 
@@ -582,10 +582,10 @@ void *Mem_AllocateHeap(Mem_HeapHandle heap_handle, size_t size) {
 }
 
 void *Mem_AllocateHeapAligned(Mem_HeapHandle heap_handle, size_t size, ssize_t align) {    
-    if(heap_handle->magic == _MKDS_MEM_EXP_HEAP_HEAD_MAGIC) {
+    if(heap_handle->magic == _NTR_MEM_EXP_HEAP_HEAD_MAGIC) {
         return Mem_Exp_Allocate(heap_handle, size, align);
     }
-    if(heap_handle->magic == _MKDS_MEM_FRAME_HEAP_HEAD_MAGIC) {
+    if(heap_handle->magic == _NTR_MEM_FRAME_HEAP_HEAD_MAGIC) {
         return Mem_Frame_Allocate(heap_handle, size, align);
     }
 
@@ -595,7 +595,7 @@ void *Mem_AllocateHeapAligned(Mem_HeapHandle heap_handle, size_t size, ssize_t a
 
 void Mem_FreeHeap(Mem_HeapHandle heap_handle, void *ptr) {
     // Only EXP heaps do actually need to free allocated data
-    if(heap_handle->magic == _MKDS_MEM_EXP_HEAP_HEAD_MAGIC) {
+    if(heap_handle->magic == _NTR_MEM_EXP_HEAP_HEAD_MAGIC) {
         Mem_Exp_Free(heap_handle, ptr);
     }
 }
@@ -614,8 +614,8 @@ size_t Mem_GetExpHeapTotalFreeSize(Mem_HeapHandle heap_handle) {
 }
 
 void Mem_ResizeExpHeap(Mem_HeapHandle heap_handle, void *ptr, size_t size) {
-    Mem_ExpHeapMemoryBlockHead *ptr_block = _MKDS_MEM_EXP_GET_PTR_BLOCK_HEAD(ptr);
-    size_t aligned_size = MKDS_UTIL_ALIGN_UP(size, 0x4);
+    Mem_ExpHeapMemoryBlockHead *ptr_block = _NTR_MEM_EXP_GET_PTR_BLOCK_HEAD(ptr);
+    size_t aligned_size = NTR_UTIL_ALIGN_UP(size, 0x4);
     size_t orig_block_size = ptr_block->block_size;
     if(aligned_size != orig_block_size) {
         if(aligned_size <= orig_block_size) {
@@ -642,12 +642,12 @@ void Mem_ResizeExpHeap(Mem_HeapHandle heap_handle, void *ptr, size_t size) {
                 Mem_ExpHeapMemoryBlockHead *prev_free_block = Mem_ExpHeapMemoryBlockList_Remove(&heap_handle->exp_heap_head.free_list, i);
                 uintptr_t block_start = region.start;
                 region.start = (uintptr_t)ptr + aligned_size;
-                if(_MKDS_MEM_REGION_SIZE(&region) < sizeof(Mem_ExpHeapMemoryBlockHead)) {
+                if(_NTR_MEM_REGION_SIZE(&region) < sizeof(Mem_ExpHeapMemoryBlockHead)) {
                     region.end = region.start;
                 }
                 ptr_block->block_size = aligned_size;
-                if(_MKDS_MEM_REGION_SIZE(&region) >= sizeof(Mem_ExpHeapMemoryBlockHead)) {
-                    Mem_ExpHeapMemoryBlockHead *new_free_block = Mem_Exp_InitializeMemoryBlock(&region, _MKDS_MEM_EXP_HEAP_FREE_BLOCK_HEAD_MAGIC);
+                if(_NTR_MEM_REGION_SIZE(&region) >= sizeof(Mem_ExpHeapMemoryBlockHead)) {
+                    Mem_ExpHeapMemoryBlockHead *new_free_block = Mem_Exp_InitializeMemoryBlock(&region, _NTR_MEM_EXP_HEAP_FREE_BLOCK_HEAD_MAGIC);
                     Mem_ExpHeapMemoryBlockList_Insert(&heap_handle->exp_heap_head.free_list, new_free_block, prev_free_block);
                 }
 
@@ -700,18 +700,18 @@ Mem_HeapHandle Mem_CreateChildExpHeap(Mem_HeapHandle parent_heap_handle) {
     // Use all available size in the parent heap head
 
     size_t allocatable_size = 0;
-    if(parent_heap_handle->magic == _MKDS_MEM_EXP_HEAP_HEAD_MAGIC) {
+    if(parent_heap_handle->magic == _NTR_MEM_EXP_HEAP_HEAD_MAGIC) {
         allocatable_size = Mem_Exp_GetAllocatableSize(parent_heap_handle, 0x4);
     }
-    else if(parent_heap_handle->magic == _MKDS_MEM_FRAME_HEAP_HEAD_MAGIC) {
+    else if(parent_heap_handle->magic == _NTR_MEM_FRAME_HEAP_HEAD_MAGIC) {
         allocatable_size = Mem_Frame_GetAllocatableSize(parent_heap_handle, 0x4);
     }
 
     void *allocated_ptr = NULL;
-    if(parent_heap_handle->magic == _MKDS_MEM_EXP_HEAP_HEAD_MAGIC) {
+    if(parent_heap_handle->magic == _NTR_MEM_EXP_HEAP_HEAD_MAGIC) {
         allocated_ptr = Mem_Exp_Allocate(parent_heap_handle, allocatable_size, 0x4);
     }
-    else if(parent_heap_handle->magic == _MKDS_MEM_FRAME_HEAP_HEAD_MAGIC) {
+    else if(parent_heap_handle->magic == _NTR_MEM_FRAME_HEAP_HEAD_MAGIC) {
         allocated_ptr = Mem_Frame_Allocate(parent_heap_handle, allocatable_size, 0x4);
     }
 
@@ -720,10 +720,10 @@ Mem_HeapHandle Mem_CreateChildExpHeap(Mem_HeapHandle parent_heap_handle) {
 
 Mem_HeapHandle Mem_CreateChildFrameHeapFromHead(Mem_HeapHandle parent_heap_handle, size_t size) {
     void *ptr = NULL;
-    if(parent_heap_handle->magic == _MKDS_MEM_EXP_HEAP_HEAD_MAGIC) {
+    if(parent_heap_handle->magic == _NTR_MEM_EXP_HEAP_HEAD_MAGIC) {
         ptr = Mem_Exp_Allocate(parent_heap_handle, size, 0x4);
     }
-    else if(parent_heap_handle->magic == _MKDS_MEM_FRAME_HEAP_HEAD_MAGIC) {
+    else if(parent_heap_handle->magic == _NTR_MEM_FRAME_HEAP_HEAD_MAGIC) {
         ptr = Mem_Frame_Allocate(parent_heap_handle, size, 0x4);
     }
 
@@ -732,10 +732,10 @@ Mem_HeapHandle Mem_CreateChildFrameHeapFromHead(Mem_HeapHandle parent_heap_handl
 
 Mem_HeapHandle Mem_CreateChildFrameHeapFromTail(Mem_HeapHandle parent_heap_handle, size_t size) {
     void *ptr = NULL;
-    if(parent_heap_handle->magic == _MKDS_MEM_EXP_HEAP_HEAD_MAGIC) {
+    if(parent_heap_handle->magic == _NTR_MEM_EXP_HEAP_HEAD_MAGIC) {
         ptr = Mem_Exp_Allocate(parent_heap_handle, size, -0x4);
     }
-    else if(parent_heap_handle->magic == _MKDS_MEM_FRAME_HEAP_HEAD_MAGIC) {
+    else if(parent_heap_handle->magic == _NTR_MEM_FRAME_HEAP_HEAD_MAGIC) {
         u32 old_state = Os_DisableIRQ();
         ptr = Mem_Frame_Allocate(parent_heap_handle, size, -0x4);
         Os_RestoreIRQ(old_state);

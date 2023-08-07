@@ -1,5 +1,5 @@
-#ifndef _MKDS_MEM_H
-#define _MKDS_MEM_H
+#ifndef _NTR_MEM_H
+#define _NTR_MEM_H
 
 #include "base.h"
 

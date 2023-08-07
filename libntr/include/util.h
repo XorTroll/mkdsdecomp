@@ -1,10 +1,10 @@
-#ifndef _MKDS_UTIL_H
-#define _MKDS_UTIL_H
+#ifndef _NTR_UTIL_H
+#define _NTR_UTIL_H
 
 #include "base.h"
 
-#define MKDS_UTIL_ALIGN_UP(val, align) (((val) + (align - 1)) & ~(align - 1))
-#define MKDS_UTIL_ALIGN_DOWN(val, align) ((val) & ~(align - 1))
+#define NTR_UTIL_ALIGN_UP(val, align) (((val) + (align - 1)) & ~(align - 1))
+#define NTR_UTIL_ALIGN_DOWN(val, align) ((val) & ~(align - 1))
 
 typedef struct Util_IntrusiveListNode {
     void *item_prev;
