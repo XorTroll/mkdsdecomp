@@ -17,9 +17,10 @@ __dtcm_top	=	ORIGIN(dtcm) + LENGTH(dtcm);
 __irq_flags	=	__dtcm_top - 0x08;
 __irq_vector	=	__dtcm_top - 0x04;
 
-__sp_svc	=	__dtcm_top - 0x100;
-__sp_irq	=	__sp_svc - 0x100;
-__sp_usr	=	__sp_irq - 0x100;
+/* TODO: these aren't constant in reality, how are they computed? */
+__sp_svc	=	__dtcm_top - 0x40; /* DTCM + 0x3FC0 */
+__sp_irq	=	__sp_svc - 0x44;
+__sp_usr	=	__sp_irq - 0xC00;
 
 PHDRS {
 	main    PT_LOAD FLAGS(7);

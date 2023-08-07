@@ -16,32 +16,46 @@ _start:
     
     bl Crt0_SomeRegisterInit
 
+    @ Note: these SP offsets are computed here (in ASM) in official code
+    @ For simplicity we borrow libnds's idea and just compute them in the ldscript
+    @ (left commented the original code)
+
     mov r0, #0x13
     msr cpsr_c, r0
-    ldr r0, =0x027E0000
+
+    ldr sp, = __sp_svc
+/*
+    ldr r0, =__dtcm_start
     add r0, r0, #0x3FC0
     mov sp, r0
+*/
 
     mov r0, #0x12
     msr cpsr_c, r0
-    ldr r0, =0x027E0000
+
+    ldr sp, =__sp_irq
+/*
+    ldr r0, =__dtcm_start
     add r0, r0, #0x3FC0
     sub r0, r0, #0x40
     sub sp, r0, #4
     ldr r1, =0xC00
     sub r1, r0, r1
+*/
 
     mov r0, #0x1F
     msr cpsr_cxsf, r0
-    sub sp, r1, #4
 
-/* TODO: finish REing this object
+    ldr sp, =__sp_usr
+/*
+    sub sp, r1, #4
+*/
+
     @ Clear DTCM
     mov r0, #0
-    ldr r1, =<dtcm data of size 0x4000>
+    ldr r1, =__dtcm_start
     mov r2, #0x4000
     bl Crt0_MemorySet32
-*/
 
     @ Clear top screen main BG palette data
     mov r0, #0
@@ -87,7 +101,7 @@ InlinedFlushLoop:
     ldr r1, =#0x027FFF9C
     str r0, [r1]
 
-/* TODO: DTCM data above mentioned
+/* TODO: what is this DTCM offset?
     ldr r1, =<dtcm shit>
     add r1, r1, #0x3FC0
     add r1, r1, #0x3C
