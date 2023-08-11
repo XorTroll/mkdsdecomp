@@ -17,7 +17,7 @@ TOPDIR ?= $(CURDIR)/..
 # all directories are relative to this makefile
 #---------------------------------------------------------------------------------
 BUILD		:=	build
-SOURCES		:=	../source ../source/arm7
+SOURCES		:=	../source ../source/ntr ../source/ntr/arm7
 INCLUDES	:=	../include
 
 #---------------------------------------------------------------------------------

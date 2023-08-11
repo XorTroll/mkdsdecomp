@@ -1,5 +1,5 @@
-#ifndef _NTR_ARM_H
-#define _NTR_ARM_H
+#ifndef _NTR_ARM_ASM_H
+#define _NTR_ARM_ASM_H
 
 #define NTR_ARM_PAGE_4K		(0b01011 << 1)
 #define NTR_ARM_PAGE_8K		(0b01100 << 1)
@@ -38,16 +38,5 @@
 #define NTR_ARM_UNK_BIT3 (1<<3)
 #define NTR_ARM_DCACHE_ENABLE	(1<<2)
 #define NTR_ARM_PROTECT_ENABLE	(1<<0)
-
-// TODO: consider splitting the file for asm and non-asm?
-
-#if !__ASSEMBLER__
-
-#include "base.h"
-
-void Arm_FlushAll();
-void Arm_FlushRange(void *ptr, size_t len);
-
-#endif
 
 #endif

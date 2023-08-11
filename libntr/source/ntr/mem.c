@@ -1,6 +1,6 @@
-#include "mem.h"
-#include "util.h"
-#include "os.h"
+#include <ntr/mem.h>
+#include <ntr/util.h>
+#include <ntr/os.h>
 
 static Util_IntrusiveList g_GlobalHeapHeadList;
 static int g_GlobalHeapHeadListInitialized = 0;

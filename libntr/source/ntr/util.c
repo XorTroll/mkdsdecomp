@@ -1,4 +1,4 @@
-#include "util.h"
+#include <ntr/util.h>
 
 void Util_FillMemory32(int val, void *src, size_t size) {
     u32 *cur_32 = (u32*)src;

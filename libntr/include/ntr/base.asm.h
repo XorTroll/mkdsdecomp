@@ -1,9 +1,7 @@
 #ifndef _NTR_BASE_ASM_H
 #define _NTR_BASE_ASM_H
 
-#if !__ASSEMBLER__
-	#error This header file is only for use in assembly files
-#endif
+#if __ASSEMBLER__
 
 .macro NTR_BEGIN_ASM_FN name section=text
 	.section .\section\().\name\(), "ax", %progbits
@@ -12,5 +10,7 @@
 	.align 2
 \name:
 .endm
+
+#endif
 
 #endif
