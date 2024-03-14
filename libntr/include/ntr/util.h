@@ -18,8 +18,6 @@ typedef struct Util_IntrusiveList {
     u16 item_list_node_offset;
 } Util_IntrusiveList;
 
-void Util_FillMemory32(int val, void *src, size_t size);
-
 void Util_IntrusiveList_Initialize(Util_IntrusiveList *self, u16 item_list_node_offset);
 
 void *Util_IntrusiveList_GetPrevItem(Util_IntrusiveList *self, void *item);

@@ -19,3 +19,5 @@ void ExecutionContext_Create(ExecutionContext *ctx, ExecutionContextFunction fn_
 Mem_HeapHandle ExecutionContext_GetHeapHandle(ExecutionContext *ctx);
 void ExecutionContext_Execute(ExecutionContext *ctx, void *fn_arg);
 void ExecutionContext_SetFunction(ExecutionContext *ctx, ExecutionContextFunction fn_ptr);
+
+ExecutionContext *GetActiveExecutionContext(void);

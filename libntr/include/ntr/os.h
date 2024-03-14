@@ -22,4 +22,11 @@ void Os_Initialize(void);
 
 void Os_DefaultDisableForceDebugMode(void);
 
+
+typedef struct {
+
+} Os_Thread;
+
+u32 Os_AllocateLockId(void);
+
 #endif

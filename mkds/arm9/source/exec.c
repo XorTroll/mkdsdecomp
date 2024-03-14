@@ -47,3 +47,7 @@ void ExecutionContext_Execute(ExecutionContext *ctx, void *fn_arg) {
 void ExecutionContext_SetFunction(ExecutionContext *ctx, ExecutionContextFunction fn_ptr) {
     ctx->exec_fn_ptr = fn_ptr;
 }
+
+ExecutionContext *GetActiveExecutionContext(void) {
+    return g_ActiveExecutionContext;
+}

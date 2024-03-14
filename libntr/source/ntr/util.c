@@ -1,15 +1,5 @@
 #include <ntr/util.h>
 
-void Util_FillMemory32(int val, void *src, size_t size) {
-    u32 *cur_32 = (u32*)src;
-    u32 *end_32 = (u32*)(src + size);
-
-    while(cur_32 < end_32) {
-        *cur_32 = val;
-        cur_32++;
-    }
-}
-
 #define _NTR_UTIL_INTRUSIVE_LIST_ITEM_NODE(list, item) ((Util_IntrusiveListNode*)(item + list->item_list_node_offset))
 
 void Util_IntrusiveList_InsertFirstItem(Util_IntrusiveList *self, void *item) {

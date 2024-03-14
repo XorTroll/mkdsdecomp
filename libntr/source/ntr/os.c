@@ -9,7 +9,7 @@ bool g_MemoryRegionsInitialized = false;
 
 bool g_ForceDebugMode = false;
 
-// TODO: this size probably was something subject to change...? maybe compiler-emitted?
+// TODO: this size probably was not a fixed constant, rather something subject to change...? maybe compiler-emitted?
 int g_SomeUnknownSize = 0x2800;
 
 u32 g_DebugFlags = UINT32_MAX;
@@ -61,7 +61,7 @@ u32 Os_GetDebugFlags(void) {
         }
 
         // Thus, bit0 == IsDebugger
-        g_DebugFlags = base_flags | NTR_BIOS_SWI_IS_DEBUGGER_ARM7_SCRAPE_ADDR;
+        g_DebugFlags = base_flags | NTR_BIOS_SWI_IS_DEBUGGER_ARM7_SCRATCH;
     }
 
     return g_DebugFlags;
@@ -219,8 +219,8 @@ void Os_InitializeMemoryRegionAddress2(void) {
 
 void Os_Initialize(void) {
     Os_InitializeMemoryRegionAddresses();
-    // <probably fifo init>();
-    // <gamecard related init>();
+    // TODO: <probably fifo init>();
+    // TODO: <gamecard related init>();
     Os_InitializeMemoryRegionAddress2();
 
     // TODO: more functions are called here

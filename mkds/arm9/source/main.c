@@ -1,16 +1,17 @@
 #include <ntr/os.h>
 #include "exec.h"
 #include "main.h"
+#include "start.h"
 
 GlobalHeapHolder g_GlobalHeapHolder;
 
 ExecutionContext g_StartExecutionContext;
 
-Mem_HeapHandle GetGlobalHeapHandle() {
+Mem_HeapHandle GetGlobalHeapHandle(void) {
     return g_GlobalHeapHolder.global_heap_hnd;
 }
 
-void MemoryRegionAddressAccess() {
+void MemoryRegionAddressAccess(void) {
     // No clue about the purpose of this, but it's called
     Os_GetMemoryRegionStartAddress(Os_MemoryRegion_MainRam);
     Os_GetMemoryRegionEndAddress(Os_MemoryRegion_MainRam);
@@ -20,13 +21,13 @@ void MemoryRegionAddressAccess() {
     Os_GetMemoryRegionEndAddress(Os_MemoryRegion_Unknown4);
 }
 
-void InitializeSomeStuff() {
+void InitializeSomeStuff(void) {
     Os_DefaultDisableForceDebugMode();
     Os_Initialize();
     // TODO: much more to add here
 }
 
-void InitializeEverything() {
+void InitializeEverything(void) {
     InitializeSomeStuff();
 
     // <screen brightness setup>();
@@ -54,11 +55,6 @@ void SetExecuteStart(ExecutionContextFunction start_fn) {
     // Unused dummy argument
     ExecutionContext_Execute(&g_StartExecutionContext, (void*)0xBEEF);
 }
-
-void StartExecuteFunction(void*) {
-    // TODO...
-    while(1);
-} 
 
 void NtrMain(void) {
     InitializeEverything();

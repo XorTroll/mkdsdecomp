@@ -24,4 +24,8 @@ Mem_HeapHandle Mem_CreateChildExpHeap(Mem_HeapHandle parent_heap_handle);
 Mem_HeapHandle Mem_CreateChildFrameHeapFromHead(Mem_HeapHandle parent_heap_handle, size_t size);
 Mem_HeapHandle Mem_CreateChildFrameHeapFromTail(Mem_HeapHandle parent_heap_handle, size_t size);
 
+void Mem_Fill32(int val, void *src, size_t size);
+void Mem_Fill8(void *dst, u8 val, size_t size);
+void Mem_Copy8(void *src, void *dst, size_t size);
+
 #endif

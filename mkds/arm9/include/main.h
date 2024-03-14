@@ -11,6 +11,6 @@ typedef struct GlobalHeapHolder {
     char *main_proc_str;
 } GlobalHeapHolder;
 
-Mem_HeapHandle GetGlobalHeapHandle();
+Mem_HeapHandle GetGlobalHeapHandle(void);
 
 #endif

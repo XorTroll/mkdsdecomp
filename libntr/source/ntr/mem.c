@@ -184,7 +184,7 @@ void *Mem_Frame_AllocFromHead(Mem_FrameHeapHead *frm_heap_head, size_t size, siz
         return 0;
     }
     if(_NTR_FRAME_GET_BASE_HEAP_HEAD(frm_heap_head)->option & Mem_CreateOption_ZeroClear) {
-        Util_FillMemory32(0, (void*)frm_heap_head->cur_heap_region.start, cur_ptr_end - frm_heap_head->cur_heap_region.start);
+        Mem_Fill32(0, (void*)frm_heap_head->cur_heap_region.start, cur_ptr_end - frm_heap_head->cur_heap_region.start);
     }
     void *ptr = (void*)cur_ptr_start_aligned;
     frm_heap_head->cur_heap_region.start = cur_ptr_end;
@@ -197,7 +197,7 @@ void *Mem_Frame_AllocFromTail(Mem_FrameHeapHead *frm_heap_head, size_t size, siz
         return 0;
     }
     if(_NTR_FRAME_GET_BASE_HEAP_HEAD(frm_heap_head)->option & Mem_CreateOption_ZeroClear) {
-        Util_FillMemory32(0, (void*)cur_heap_end_aligned, frm_heap_head->cur_heap_region.end - cur_heap_end_aligned);
+        Mem_Fill32(0, (void*)cur_heap_end_aligned, frm_heap_head->cur_heap_region.end - cur_heap_end_aligned);
     }
     void *ptr = (void*)cur_heap_end_aligned;
     frm_heap_head->cur_heap_region.end = cur_heap_end_aligned;
@@ -377,7 +377,7 @@ void *Mem_Exp_ConvertFreeBlockToUsedBlock(Mem_ExpHeapHead *exp_heap_head, Mem_Ex
     }
 
     if(_NTR_EXP_GET_BASE_HEAP_HEAD(exp_heap_head)->option & Mem_CreateOption_ZeroClear) {
-        Util_FillMemory32(0, (void*)free_region_front.end, free_region_back.start - free_region_front.end);
+        Mem_Fill32(0, (void*)free_region_front.end, free_region_back.start - free_region_front.end);
     }
 
     Mem_MemoryRegion used_region;
@@ -652,7 +652,7 @@ void Mem_ResizeExpHeap(Mem_HeapHandle heap_handle, void *ptr, size_t size) {
                 }
 
                 if(heap_handle->option & Mem_CreateOption_ZeroClear) {
-                    Util_FillMemory32(0, (void*)block_start, region.start - block_start);
+                    Mem_Fill32(0, (void*)block_start, region.start - block_start);
                 }
             }
         }
@@ -742,4 +742,14 @@ Mem_HeapHandle Mem_CreateChildFrameHeapFromTail(Mem_HeapHandle parent_heap_handl
     }
 
     return Mem_Frame_Create(ptr, size, Mem_CreateOption_ZeroClear);
+}
+
+void Mem_Fill32(int val, void *src, size_t size) {
+    u32 *cur_32 = (u32*)src;
+    u32 *end_32 = (u32*)(src + size);
+
+    while(cur_32 < end_32) {
+        *cur_32 = val;
+        cur_32++;
+    }
 }
