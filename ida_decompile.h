@@ -914,6 +914,13 @@ struct StructZ
   u32 maybe_flags;
 };
 
+/* 158 */
+struct __attribute__((packed)) StructIU
+{
+  u32 iu1;
+  _QWORD iu2;
+};
+
 /* 129 */
 struct StructMKDSSV
 {
@@ -935,7 +942,9 @@ struct StructMKDSSV
   u8 m4;
   u8 unkarr32[11];
   int some_idx;
-  u8 unkarr4[188];
+  u8 unkarr41[8];
+  StructIU some_iu;
+  u8 unkarr42[168];
 };
 
 /* 131 */
@@ -990,13 +999,6 @@ struct StructOI
   u16 oi7;
   u8 oi8[20];
   u16 some_flags;
-};
-
-/* 158 */
-struct __attribute__((packed)) StructIU
-{
-  u32 iu1;
-  _QWORD iu2;
 };
 
 /* 130 */
@@ -1329,9 +1331,21 @@ struct StructF
 /* 189 */
 struct StructTK
 {
-  u32 tks[134];
+  u16 user_name[10];
+  u32 arr[128];
+  u8 some_flag;
+  u8 pad;
+  u16 some_size;
   StructIU iu;
-  u32 tks2[8];
+  u32 mkdssv_fl1;
+  u8 some_flag_2;
+  u8 unk[3];
+  u32 yuyu3;
+  u32 yuyu4;
+  u32 yuyu5;
+  u32 yuyu6;
+  u32 yuyu7;
+  u32 yuyu8;
 };
 
 /* 121 */
@@ -1342,7 +1356,11 @@ struct __attribute__((aligned(32))) StructO
   StructE7 q7;
   u32 os1[131];
   StructTK tks[4];
-  u32 os2[942];
+  u32 os21[881];
+  u32 osso;
+  u32 osos;
+  u32 ososos;
+  u32 os22[58];
   StructIU ius[60];
   u32 os3[156];
   u32 some_val_1;
@@ -1442,7 +1460,7 @@ struct StructSX
   u32 some_val;
   u32 bak_lock_id;
   u32 some_flag_call_some_fn;
-  u32 sx10;
+  u32 some_flag_maybe_fn_running;
   u32 flag_c;
   u32 offset_2;
   u32 sxx1;
