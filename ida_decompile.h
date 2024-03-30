@@ -61,6 +61,9 @@ struct StructARSub;
 struct StructPEP;
 struct Struct59C4;
 struct Struct59C4Sub;
+struct StructKEY;
+struct NFTR_CharacterWidthBlockTileEntry;
+struct StructFON;
 
 /* 1 */
 union __attribute__((aligned(8))) __n64
@@ -498,7 +501,7 @@ struct BetaStruct
 /* 50 */
 struct StructG
 {
-  _WORD g1;
+  _WORD some_flags_x;
   _WORD maybe_prev_keys;
   _WORD g3;
   _WORD keys_repeat;
@@ -790,7 +793,7 @@ struct StructW1
 /* 76 */
 struct StructW
 {
-  _WORD some_count;
+  _WORD some_irq_wait_loop_count;
   u16 dispcnt_screen_display_bg_bits_top;
   u16 dispcnt_screen_display_bg_bits_sub;
   u16 dispcnt_display_mode;
@@ -954,11 +957,29 @@ struct StructNKEM
   u32 ses[191];
 };
 
+/* 289 */
+struct StructNKGPCupEntry
+{
+  u8 b1;
+  u8 b2;
+  u8 b3;
+  u8 b4;
+  u32 qqq;
+  u8 user_name[20];
+};
+
+/* 288 */
+struct StructNKGPEntry
+{
+  StructNKGPCupEntry cups[8];
+};
+
 /* 133 */
 struct StructNKGP
 {
   u32 magic_nkgp;
-  u32 nkgps[255];
+  StructNKGPEntry entries[4];
+  u32 nkgps[31];
 };
 
 /* 134 */
@@ -968,11 +989,18 @@ struct StructNKTA
   u32 nktas[1407];
 };
 
+/* 292 */
+struct StructNKMRLevelEntry
+{
+  u8 stage_infos[9];
+};
+
 /* 135 */
 struct StructNKMR
 {
   u32 magic_nkmr;
-  u32 nkmrs[63];
+  StructNKMRLevelEntry levels[7];
+  u8 nkmrs[188];
 };
 
 /* 132 */
@@ -1051,9 +1079,9 @@ struct File_ProcessedFntEntry
 struct NFTR
 {
   NFTR_FNIFBlock *fnif_data;
-  u32 fn_ptr;
-  u16 nf31;
-  u16 nf32;
+  int (__cdecl *next_char_fn_ptr)(StructFON *);
+  u16 proc_ok;
+  u16 char_width_entry_size;
 };
 
 /* 95 */
@@ -1071,18 +1099,25 @@ struct Struct2D
 };
 
 /* 150 */
-struct NFTR_FNIFBlock
+struct __attribute__((packed)) NFTR_FNIFBlock
 {
   u8 unk_zero1;
   u8 height;
-  u16 unk_zero3;
-  u8 unk_zero4;
+  u8 unk_zero3;
+  u16 unk_zero4;
   u8 width;
   u8 width2;
   u8 encoding;
   u32 offset_charglyph_p8;
-  u32 offset_charwidth_p8;
+  u32 char_width_block_post_header_offset;
   u32 offset_charmap1_p8;
+};
+
+/* 298 */
+struct StructFON
+{
+  void *some_str;
+  int as[9];
 };
 
 /* 99 */
@@ -1322,10 +1357,82 @@ struct StructQ
   u32 qx;
 };
 
+/* 277 */
+struct StructSTFSub
+{
+  u32 s1;
+  u32 s2;
+  u32 s3;
+  u8 s4;
+  u8 s4unk[3];
+  u32 s5;
+  void *fn_1;
+  void *fn_2;
+  void *fn_3;
+};
+
 /* 119 */
 struct StructF
 {
-  u32 fs[2206];
+  u32 f1;
+  u32 f2;
+  u32 f3;
+  u32 f4;
+  u32 f5;
+  u32 f6;
+  u32 f7;
+  u32 f8;
+  u32 f9;
+  u32 f10;
+  u32 f11;
+  u32 f12;
+  u32 f13;
+  u32 f14;
+  u32 f15;
+  u32 f16;
+  u32 f17;
+  u32 f18;
+  u32 f19;
+  u32 f20;
+  u32 f21;
+  u32 fs[2065];
+  StructSTFSub stfs[7];
+  StructKEY *k1;
+  u32 ka1;
+  StructKEY *k2;
+  u32 ka2;
+  StructKEY *k3;
+  u32 ka3;
+  StructKEY *k4;
+  u32 ka4;
+  StructKEY *k5;
+  u32 ka5;
+  StructKEY *k6;
+  u32 ka6;
+  StructKEY *k7;
+  u32 ka7;
+  u32 fs2[14];
+  void *ptrs[7];
+  u32 gugu[19];
+  u32 g1;
+  u32 g2;
+  u32 g3;
+  void *txt_system_bg_00_nscr;
+  void *txt_system_bg_00_2_nscr;
+  void *txt_system_bg_01_2_nscr;
+  void *txt_system_bg_01_nscr;
+  void *txt_system_bg_02_nscr;
+  void *txt_system_bg_02_2_nscr;
+  void *txt_system_bg_02_3_nscr;
+};
+
+/* 284 */
+struct StructKEY
+{
+  StructSTFSub *some_stfsub_ptr;
+  NFTR *some_font_ptr;
+  u32 inter_char_width;
+  u32 k4;
 };
 
 /* 189 */
@@ -1354,7 +1461,9 @@ struct __attribute__((aligned(32))) StructO
   Mem_HeapHead *heap;
   void *some_alloc_ptr;
   StructE7 q7;
-  u32 os1[131];
+  u32 os1[128];
+  void *ptr_sz_910;
+  u32 os111[2];
   StructTK tks[4];
   u32 os21[881];
   u32 osso;
@@ -1369,7 +1478,7 @@ struct __attribute__((aligned(32))) StructO
   u32 of;
   u32 oe;
   u32 od;
-  u32 oc;
+  u32 maybe_net_errno;
   u32 ob;
   u32 oa;
   u8 ooonk1;
@@ -1403,7 +1512,7 @@ struct StructM
   void *common_bmg_ptr;
   void *secret_bmg_ptr;
   u32 m22;
-  u32 some_flags;
+  u32 unlocked_achiev_flags;
   u32 m24;
 };
 
@@ -1715,13 +1824,13 @@ struct StructJT
 {
   u32 init_global_f;
   NFTR *loaded_font_1;
-  u32 jt3;
-  u32 jt4;
-  u32 jt5;
+  u32 f_flag_1;
+  u32 f_flag_2;
+  u32 f_flag_3;
   u32 init_global_nb;
   NFTR *loaded_font_2;
   u32 init_some_obj;
-  u32 init_sth;
+  u32 init_another_obj;
   u32 jt10;
   u32 jt11;
   u32 jt12;
@@ -1802,17 +1911,20 @@ struct StructCA
 };
 
 /* 180 */
-struct StructCOI
+struct StructRacer
 {
   u32 ci1;
   u32 ci2;
   u32 ci3;
   u32 ci4;
   u32 ci5;
-  u32 ci6;
-  u16 *str16;
+  u8 ci61;
+  u8 ci62;
+  u8 cpu_id;
+  u8 ci64;
+  u16 *maybe_custom_name_str16;
   u32 ci8;
-  u32 ci9;
+  StructIU *striu;
   u32 ci10;
   u32 ci11;
   u32 ci12;
@@ -1827,21 +1939,21 @@ struct StructCOSub
 /* 160 */
 struct StructCO
 {
-  u32 maybe_kart_idx;
+  u32 maybe_circuit_idx;
   u32 c2;
-  u32 maybe_cur_mode_2_battle_4_mission;
+  u32 cur_mode;
   u32 some_strw_rel_idx_0_6;
   StructCO *c5;
   u32 c6;
-  u32 c7;
+  u32 battle_kind;
   u32 c8;
   u32 cos1[9];
-  u32 some_flahs;
+  u32 some_flags;
   u32 some_nkm_mission_path_start;
   u32 co1;
   u32 co2;
-  u8 some_bmg_idx_ref;
-  u8 co32;
+  u8 cur_mission_level;
+  u8 cur_mission_level_stage;
   u8 co33;
   u8 co34;
   u8 is_teams;
@@ -1854,14 +1966,14 @@ struct StructCO
   u8 other_char_idx;
   u8 some_char_idx;
   u32 cos2x;
-  u32 *cos22;
+  u32 *ptr_0x12_count_8;
   u32 cos23;
-  StructCOI cois[8];
+  StructRacer racers[8];
   u32 cos3[8];
   u8 unk_2c[44];
   StructCOSub cosubs[8];
   u32 uuu[5];
-  u8 some_count;
+  u8 racer_count;
   u8 aa2;
   u8 aa3;
   u8 aa4;
@@ -1990,6 +2102,20 @@ struct Crt0_StartContext
   void *some_code_ptr_end;
 };
 
+/* 294 */
+struct StructRC
+{
+  u32 nus1[8];
+  u8 na1;
+  u8 na2;
+  u8 na3;
+  u8 na4;
+  u32 nus2[6];
+  u16 nb1;
+  u16 nb2;
+  u32 nus3[19];
+};
+
 /* 168 */
 struct StructMV
 {
@@ -1999,15 +2125,11 @@ struct StructMV
   u8 mw32;
   u8 mw33;
   u16 mw41;
-  u16 mw42;
-  u16 mw51;
+  u16 maybe_racer_count;
+  u16 some_racer_idx;
   u16 mw52;
-  u32 mw6;
-  u32 mvs1[14];
-  u32 mm1;
-  u32 mm2;
-  u32 mm3;
-  u32 objs_sz_23[277];
+  StructRC rcs[8];
+  u32 objs_sz_23[15];
   u32 mv21;
   u32 mv22;
   u32 mv23;
@@ -2672,7 +2794,18 @@ struct StructZM
   u32 z5;
   u32 z6;
   void (*some_fn_3)(void);
-  u32 zs[15];
+  u32 za1;
+  u32 za2;
+  u32 za3;
+  u32 za4;
+  u32 za5;
+  u32 multiplay_error_kind;
+  u32 player_disconnected;
+  u8 fn_t_for_multiplay_err;
+  u8 za82;
+  u8 za83;
+  u8 za84;
+  u32 zs[7];
 };
 
 /* 214 */
@@ -2786,8 +2919,8 @@ struct StructMapObjectSub
   u32 s7;
   u32 s8;
   u32 s9;
-  StructAD00Sh *s10;
-  StructAM *s11;
+  StructAD00Sh *strad00sh;
+  StructAM *stram;
 };
 
 /* 220 */
@@ -2810,14 +2943,14 @@ struct StructB4A4
 /* 223 */
 struct StructAD00
 {
-  StructAD00Sub *subs;
+  StructAD00Sub *subs_per_racers;
   void *kart_kartcrsmat_bin_ptr;
   u16 some_count;
   u16 a32;
   u32 a4;
   void *kart_a_plt_data_offset;
   void *heyho_color_plt_data_offset;
-  u16 a7[8];
+  u16 arr_per_racers[8];
   void *player_face_anim_nsbtp_ptr;
   StructML killer_item_mdl;
   StructAD00Sh some_ad00sh;
@@ -2848,8 +2981,8 @@ struct StructB488
   u32 some_idx;
   u32 b16;
   u32 maybe_cup_idx;
-  u32 maybe_current_track;
-  u32 b17;
+  u32 cc_type;
+  u32 is_mirror;
   u32 b18;
   u32 b19;
   u32 bs2[4];
@@ -3159,7 +3292,17 @@ struct StructFAT
 /* 270 */
 struct StructAED0
 {
-  u32 fefe[101];
+  u32 ae1;
+  u32 ae2;
+  u32 ae3;
+  u32 ae4;
+  u32 ae5;
+  u32 ae6;
+  u32 ae7;
+  u32 ae8;
+  u32 some_count;
+  u32 aedd[40];
+  u32 fefe[52];
 };
 
 /* 271 */
@@ -3191,20 +3334,6 @@ struct StructTEQ
   u32 maybe_total_len;
 };
 
-/* 277 */
-struct StructSTFSub
-{
-  u32 s1;
-  u32 s2;
-  u32 s3;
-  u8 s4;
-  u8 s4unk[3];
-  u32 s5;
-  void *fn_1;
-  void *fn_2;
-  void *fn_3;
-};
-
 /* 276 */
 struct StructSTF
 {
@@ -3233,8 +3362,20 @@ struct StructSTF
 struct StructB350
 {
   u32 h1;
+  u32 arr1[256];
   u32 h2;
-  u32 hs[579];
+  u32 arr2[256];
+  u32 h3;
+  PaletteBlock *race_m_b_plt;
+  u32 h4;
+  CharGraphicsBlock *race_m_b_ncgr;
+  u32 h5;
+  void *race_m_pause_nscr;
+  void *race_m_goal_nscr;
+  u32 hhh[57];
+  u32 some_flag_x;
+  u32 hh2;
+  u32 hh3;
 };
 
 /* 279 */
@@ -3265,18 +3406,15 @@ struct StructB3EC
 /* 282 */
 struct Struct1A44
 {
-  u32 some_mode;
-  u32 a2;
-  u32 some_bmg_str;
-  u32 a4;
+  u32 multiplay_error_kind;
+  u32 maybe_multiplay_error_arg;
+  void *multiplay_error_str;
+  u32 maybe_has_multiplay_error;
   u32 a5;
   StructSTFSub ssub;
-  u32 a6;
-  NFTR *some_font_ptr;
-  u32 a8;
-  u32 a9;
+  StructKEY key;
   u32 some_tile_data[1280];
-  u32 ass2[384];
+  u16 temp_multiplay_error_str_buf[768];
 };
 
 /* 283 */
@@ -3288,12 +3426,145 @@ struct StructTEQSub
   u32 some_len;
 };
 
-/* 284 */
-struct StructKEY
+/* 285 */
+struct StructB3C4
 {
-  StructSTFSub *some_stfsub_ptr;
-  NFTR *some_font_ptr;
-  u32 some_flag_jp;
-  u32 k4;
+  u32 race_m_ncer_stuff[56];
+  u32 race_goal_m_ncer_stuff[68];
+  u32 race_ta_m_ncer_stuff[15];
+  u32 race_battle_m_ncer_stuff[13];
+  u32 race_mr_m_ncer_stuff[22];
+  u32 race_goal_mr_m_ncer_stuff[8];
+  u32 race_s_ncer_stuff[201];
+  u32 race_goal_s_ncer_stuff[44];
+  u32 race_goal_team_s_ncer_stuff[40];
+  u32 race_new_record_ta_s_ncer_stuff[33];
+  u32 race_start_battle_m_ncer_stuff[3];
+  PaletteBlock *race_m_o_plt;
+  CharGraphicsBlock *race_m_o_ncgr;
+  u32 p2;
+  u32 p3;
+  PaletteBlock *race_goal_m_o_plt;
+  CharGraphicsBlock *race_goal_m_o_ncgr;
+  u32 q2;
+  u32 q3;
+  PaletteBlock *race_ta_m_o_plt;
+  CharGraphicsBlock *race_ta_m_o_ncgr;
+  u32 a11;
+  u32 a12;
+  PaletteBlock *race_battle_m_o_plt;
+  CharGraphicsBlock *race_battle_m_o_ncgr;
+  u32 t2;
+  u32 t3;
+  PaletteBlock *race_mr_m_o_plt;
+  CharGraphicsBlock *race_mr_m_o_ncgr;
+  u32 y2;
+  u32 y3;
+  PaletteBlock *race_goal_mr_m_o_plt;
+  CharGraphicsBlock *race_goal_mr_m_o_ncgr;
+  u32 z2;
+  u32 z3;
+  PaletteBlock *race_s_o_plt;
+  CharGraphicsBlock *race_s_o_ncgr;
+  u32 b3;
+  u32 b4;
+  PaletteBlock *race_goal_s_o_plt;
+  CharGraphicsBlock *race_goal_s_o_ncgr;
+  u32 b7;
+  u32 b8;
+  PaletteBlock *race_goal_team_s_o_plt;
+  CharGraphicsBlock *race_goal_team_s_o_ncgr;
+  u32 b11;
+  u32 b12;
+  PaletteBlock *race_new_record_ta_s_o_plt;
+  CharGraphicsBlock *race_new_record_ta_s_o_ncgr;
+  u32 b15;
+  u32 b16;
+  PaletteBlock *race_start_battle_m_o_plt;
+  CharGraphicsBlock *race_start_battle_m_o_ncgr;
+  u32 r2;
+  u32 r3;
+};
+
+/* 286 */
+struct Struct;
+
+/* 287 */
+struct StructFInit
+{
+  NFTR *font;
+  u32 flag_1;
+  u32 flag_2;
+  u32 flag_3;
+  u32 fi5;
+};
+
+/* 290 */
+struct StructCP
+{
+  u8 t1;
+  u8 t2;
+  u8 t3;
+  u8 t4;
+  u16 user_name[10];
+  u8 some_flag_maybe_nonempty;
+  u8 q2;
+  u8 q3;
+  u8 q4;
+  u8 s1;
+  u8 s2;
+  u8 s3;
+  u8 s4;
+};
+
+/* 291 */
+struct StructBAN
+{
+  u32 a;
+  u32 mkds_name_str;
+  u32 mkds_desc_str;
+};
+
+/* 293 */
+struct StructMissionLevelStageInfo
+{
+  u8 unlocked;
+  u8 cleared;
+};
+
+/* 295 */
+struct StructPA
+{
+  u8 p1;
+  u8 p2;
+  u16 name[10];
+};
+
+/* 296 */
+struct NFTR_CharacterWidthBlockImpl
+{
+  u16 first_tile_idx;
+  u16 last_tile_idx;
+  u32 unk_zero;
+  NFTR_CharacterWidthBlockTileEntry *entries;
+};
+
+/* 297 */
+struct __attribute__((packed)) NFTR_CharacterWidthBlockTileEntry
+{
+  u8 left_spacing;
+  u8 char_bitmap_width;
+  u8 char_total_width;
+};
+
+/* 299 */
+struct NFTR_CharacterMapBlockImpl
+{
+  u16 first_char;
+  u16 last_char;
+  u32 map_type;
+  NFTR_CharacterMapBlockImpl *next_map_offset_post_header;
+  u16 first_char_tile_no;
+  u16 zero;
 };
 
