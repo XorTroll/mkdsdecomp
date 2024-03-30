@@ -1080,7 +1080,7 @@ struct NFTR
 {
   NFTR_FNIFBlock *fnif_data;
   int (__cdecl *next_char_fn_ptr)(StructFON *);
-  u16 proc_ok;
+  u16 ver_is_old;
   u16 char_width_entry_size;
 };
 
@@ -3308,7 +3308,9 @@ struct StructAED0
 /* 271 */
 struct StructB3F0
 {
-  u32 beb[7];
+  u32 beb[5];
+  u32 cur_mission_level_stage_cleared;
+  u32 b3;
 };
 
 /* 273 */
