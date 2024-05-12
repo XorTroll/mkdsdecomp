@@ -62,4 +62,4 @@ void InitializeGlobalObjects(void) {
 void StartExecuteFunction(void*) {
     InitializeGlobalObjects();
     // <function that uses another exec ctx to run the main loop>();
-} 
+}

@@ -32,7 +32,7 @@ void InitializeEverything(void) {
 
     // <screen brightness setup>();
 
-    g_GlobalHeapHolder.some_ptr = (void*)0x02000000;
+    g_GlobalHeapHolder.some_ptr = (void*)(0x02000000);
     g_GlobalHeapHolder.heap_start_addr = Os_GetMemoryRegionStartAddress(Os_MemoryRegion_MainRam);
 
     MemoryRegionAddressAccess();
@@ -49,12 +49,20 @@ void InitializeEverything(void) {
     // <function that inits some object>();
 }
 
+extern void PrintInit();
+extern void PrintString(size_t len, const char *str);
+
 void SetExecuteStart(ExecutionContextFunction start_fn) {
     ExecutionContext_SetFunction(&g_StartExecutionContext, start_fn);
 
     // Unused dummy argument
     ExecutionContext_Execute(&g_StartExecutionContext, (void*)0xBEEF);
 }
+
+#define LOOP_PRINT(str) \
+    PrintInit(); \
+    PrintString(__builtin_strlen(str), str); \
+    while(1);
 
 void NtrMain(void) {
     InitializeEverything();

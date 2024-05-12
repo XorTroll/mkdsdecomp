@@ -35,4 +35,10 @@ void Arm_Context_Create(Arm_Context *ctx, uintptr_t pc_addr, uintptr_t sp_addr);
 void Arm_Context_Load(Arm_Context *ctx);
 void Arm_Context_Save(Arm_Context *ctx);
 
+#define ARM_BUS_CLOCK 33514000
+
+inline int Arm_MillisecondsToTicks(const int ms) {
+    return (ms * (ARM_BUS_CLOCK / 1000)) / 64;
+}
+
 #endif

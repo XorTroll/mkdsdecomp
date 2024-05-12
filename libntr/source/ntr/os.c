@@ -67,6 +67,16 @@ u32 Os_GetDebugFlags(void) {
     return g_DebugFlags;
 }
 
+void Os_InitializeSvcStack(void) {
+    // Set stack magics at the stack top/bottom
+    *(volatile u32*)NTR_BIOS_DTCM_REGION->svc_stack = NTR_OS_THREAD_STACK_TOP_MAGIC;
+    *((volatile u32*)(NTR_BIOS_DTCM_REGION->svc_stack + NTR_BIOS_DTCM_STACK_SIZE) - 1) = NTR_OS_THREAD_STACK_TOP_MAGIC;
+}
+
+void Os_InitializeIrqThreadQueue(void) {
+    Os_ThreadQueue_Initialize(&NTR_BIOS_DTCM_REGION->irq_queue);
+}
+
 void *Os_ComputeMemoryRegionStartAddress(Os_MemoryRegion region) {
     uintptr_t addr;
 
@@ -178,7 +188,7 @@ void *Os_GetMemoryRegionEndAddress(Os_MemoryRegion region) {
 void Os_SetSystemRomPU(u32 pu_config);
 void Os_SetVectorBasePU(u32 pu_config);
 
-// Yeah, N does it in this order :P
+// Yeah, N does it in this order
 #define _NTR_OS_COMPUTE_SET_REGION(i) ({ \
     void *end_addr_##i = Os_ComputeMemoryRegionEndAddress(i); \
     Os_SetMemoryRegionEndAddress(i, end_addr_##i); \
@@ -219,9 +229,12 @@ void Os_InitializeMemoryRegionAddress2(void) {
 
 void Os_Initialize(void) {
     Os_InitializeMemoryRegionAddresses();
-    // TODO: <probably fifo init>();
-    // TODO: <gamecard related init>();
+    // TODO: <fifo related init>();
+    // TODO: <lock related init>();
     Os_InitializeMemoryRegionAddress2();
+    Os_InitializeIrqThreadQueue();
+    // Os_InitializeSvcStack();
+    // TODO: <init exception handler>();
 
     // TODO: more functions are called here
 }

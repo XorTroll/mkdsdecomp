@@ -1,5 +1,5 @@
-#include "arm.h"
-#include "math.h"
+#include <ntr/arm.h>
+#include <ntr/math.h>
 
 void Arm_MathContext_Load(Arm_MathContext *ctx) {
 

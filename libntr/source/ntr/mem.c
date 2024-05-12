@@ -184,7 +184,7 @@ void *Mem_Frame_AllocFromHead(Mem_FrameHeapHead *frm_heap_head, size_t size, siz
         return 0;
     }
     if(_NTR_FRAME_GET_BASE_HEAP_HEAD(frm_heap_head)->option & Mem_CreateOption_ZeroClear) {
-        Mem_Fill32(0, (void*)frm_heap_head->cur_heap_region.start, cur_ptr_end - frm_heap_head->cur_heap_region.start);
+        Mem_CpuMemorySet32(0, (void*)frm_heap_head->cur_heap_region.start, cur_ptr_end - frm_heap_head->cur_heap_region.start);
     }
     void *ptr = (void*)cur_ptr_start_aligned;
     frm_heap_head->cur_heap_region.start = cur_ptr_end;
@@ -197,7 +197,7 @@ void *Mem_Frame_AllocFromTail(Mem_FrameHeapHead *frm_heap_head, size_t size, siz
         return 0;
     }
     if(_NTR_FRAME_GET_BASE_HEAP_HEAD(frm_heap_head)->option & Mem_CreateOption_ZeroClear) {
-        Mem_Fill32(0, (void*)cur_heap_end_aligned, frm_heap_head->cur_heap_region.end - cur_heap_end_aligned);
+        Mem_CpuMemorySet32(0, (void*)cur_heap_end_aligned, frm_heap_head->cur_heap_region.end - cur_heap_end_aligned);
     }
     void *ptr = (void*)cur_heap_end_aligned;
     frm_heap_head->cur_heap_region.end = cur_heap_end_aligned;
@@ -373,11 +373,11 @@ void *Mem_Exp_ConvertFreeBlockToUsedBlock(Mem_ExpHeapHead *exp_heap_head, Mem_Ex
         Mem_ExpHeapMemoryBlockList_Insert(&exp_heap_head->free_list, new_used_block, prev_block_head);
     }
     else {
-        free_region_back.end = free_region_back.start;
+        free_region_back.start = free_region_back.end;
     }
 
     if(_NTR_EXP_GET_BASE_HEAP_HEAD(exp_heap_head)->option & Mem_CreateOption_ZeroClear) {
-        Mem_Fill32(0, (void*)free_region_front.end, free_region_back.start - free_region_front.end);
+        Mem_CpuMemorySet32(0, (void*)free_region_front.end, free_region_back.start - free_region_front.end);
     }
 
     Mem_MemoryRegion used_region;
@@ -387,16 +387,16 @@ void *Mem_Exp_ConvertFreeBlockToUsedBlock(Mem_ExpHeapHead *exp_heap_head, Mem_Ex
     
     // Set allocation direction
     used_block->attributes &= ~0x8000u;
-    used_block->attributes |= (mem_block_alloc_direction) << 15;
+    used_block->attributes |= (mem_block_alloc_direction & 1) << 15;
 
     // Set memory block alignment padding
-    size_t mem_block_align_pad = (uintptr_t)used_block - free_region_front.end;
+    u8 mem_block_align_pad = (((uintptr_t)used_block & 0xFF) - (free_region_front.end & 0xFF));
     used_block->attributes &= ~0x7F00u;
     used_block->attributes |= (mem_block_align_pad & 0x7F) << 8;
 
     // Set group ID
     used_block->attributes &= ~0xFFu;
-    used_block->attributes |= exp_heap_head->group_id;
+    used_block->attributes |= exp_heap_head->group_id & 0xFF;
 
     Mem_ExpHeapMemoryBlockList_Insert(&exp_heap_head->used_list, used_block, exp_heap_head->used_list.list_tail);
     return (void*)block;
@@ -450,24 +450,17 @@ void *Mem_Exp_AllocateFromHead(Mem_HeapHead *heap_head, size_t size, size_t alig
             size_t cur_block_size = cur_free_block_head->block_size;
             uintptr_t cur_block = _NTR_MEM_EXP_GET_BLOCK(cur_free_block_head);
             uintptr_t block_offset = NTR_UTIL_ALIGN_UP(_NTR_MEM_EXP_GET_BLOCK(cur_free_block_head), align);
+            
             // Check if the data would fit in this block
             if((cur_block_size >= (size + block_offset - cur_block)) && (best_size > cur_block_size)) {
                 found_block_head = cur_free_block_head;
                 best_size = cur_block_size;
                 found_block = block_offset;
-                if(is_first_fit || (best_size == size)) {
+                if(is_first_fit || (cur_block_size == size)) {
                     break;
                 }
             }
 
-            if(((block_offset - cur_block) >= 0) && (best_size > cur_block_size)) {
-                found_block_head = cur_free_block_head;
-                best_size = cur_block_size;
-                found_block = block_offset;
-                if(is_first_fit || (best_size == size)) {
-                    break;
-                }
-            }
             cur_free_block_head = cur_free_block_head->next_block;
         } while(cur_free_block_head != NULL);
     }
@@ -652,7 +645,7 @@ void Mem_ResizeExpHeap(Mem_HeapHandle heap_handle, void *ptr, size_t size) {
                 }
 
                 if(heap_handle->option & Mem_CreateOption_ZeroClear) {
-                    Mem_Fill32(0, (void*)block_start, region.start - block_start);
+                    Mem_CpuMemorySet32(0, (void*)block_start, region.start - block_start);
                 }
             }
         }
@@ -715,7 +708,7 @@ Mem_HeapHandle Mem_CreateChildExpHeap(Mem_HeapHandle parent_heap_handle) {
         allocated_ptr = Mem_Frame_Allocate(parent_heap_handle, allocatable_size, 0x4);
     }
 
-    return Mem_Exp_Create(allocated_ptr, allocatable_size, Mem_CreateOption_ZeroClear);
+    return Mem_Exp_Create(allocated_ptr, allocatable_size, /*Mem_CreateOption_ZeroClear*/0);
 }
 
 Mem_HeapHandle Mem_CreateChildFrameHeapFromHead(Mem_HeapHandle parent_heap_handle, size_t size) {
@@ -727,7 +720,7 @@ Mem_HeapHandle Mem_CreateChildFrameHeapFromHead(Mem_HeapHandle parent_heap_handl
         ptr = Mem_Frame_Allocate(parent_heap_handle, size, 0x4);
     }
 
-    return Mem_Frame_Create(ptr, size, Mem_CreateOption_ZeroClear);
+    return Mem_Frame_Create(ptr, size, /*Mem_CreateOption_ZeroClear*/0);
 }
 
 Mem_HeapHandle Mem_CreateChildFrameHeapFromTail(Mem_HeapHandle parent_heap_handle, size_t size) {
@@ -741,10 +734,10 @@ Mem_HeapHandle Mem_CreateChildFrameHeapFromTail(Mem_HeapHandle parent_heap_handl
         Os_RestoreIRQ(old_state);
     }
 
-    return Mem_Frame_Create(ptr, size, Mem_CreateOption_ZeroClear);
+    return Mem_Frame_Create(ptr, size, /*Mem_CreateOption_ZeroClear*/0);
 }
 
-void Mem_Fill32(int val, void *src, size_t size) {
+void Mem_CpuMemorySet32(int val, void *src, size_t size) {
     u32 *cur_32 = (u32*)src;
     u32 *end_32 = (u32*)(src + size);
 

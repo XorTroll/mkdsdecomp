@@ -2,5 +2,8 @@
 dev/
 build/
 lib/
+backup/
+*.bin
 *.elf
 *.nds
+*.sav
