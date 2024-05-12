@@ -11,7 +11,7 @@ Extract `header.bin` (at least first `0x200` header bytes), `arm9.bin` and `arm9
 
 Run [`ncpatcher`](https://github.com/TheGameratorT/NCPatcher) in this directory, which will modify the binaries (while also saving backups of the original ones in a separate directory)
 
-Import arm9.bin` and `arm9ovt.bin` in a Mario Kart DS (EU) ROM (another thing soon to be automated)
+Import `arm9.bin` and `arm9ovt.bin` in a Mario Kart DS (EU) ROM (another thing soon to be automated)
 
 > [NSMBe5](https://github.com/MammaMiaTeam/NSMB-Editor) may be used for manual extraction/importing of ROM binaries
 
