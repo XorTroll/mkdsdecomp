@@ -6,20 +6,18 @@ u16 str3[100] = u"from";
 u16 str4[100] = u"mkdsdecomp";
 
 void CustomDrawNames() {
+    // Debug log to emulator
+    DebugPrint("Hello world!\n");
+
     G2d_BgCanvas bg_canvas;
     G2d_TextCanvas txt_canvas;
 
-    // TODO: why does calling GetSomeBgCanvasTileData or Clear1A44SomeTileData abort? doing it manually works...
+    // TODO: why does calling GetSomeBgCanvasTileData or Clear1A44SomeTileData abort? doing it manually like below works fine...
     void *tile_data = g_Global1A44->bg_canvas_tile_data;
     Mem_CpuFill8(tile_data, 0, 5120);
 
     G2d_BgCanvas_CreateFromBgTiles(&bg_canvas, tile_data, 32, 4, 4);
-
-    // This setters are probably from an inlined function similar to the one above for bg canvas, these are inlined all over MKDS code
-    txt_canvas.inter_char_width = 1;
-    txt_canvas.draw_font_ptr = g_LoadedFonts[0];
-    txt_canvas.bg_canvas_ptr = &bg_canvas;
-    txt_canvas.line_spacing_height = 0;
+    G2d_TextCanvas_Create(&txt_canvas, &bg_canvas, g_LoadedFonts[0], 1, 0);
 
     // Not really correct x/y values, but good enough to show it's working :P
     G2d_TextCanvas_PrintString(&txt_canvas, 0, 8, 8, 0, str1);

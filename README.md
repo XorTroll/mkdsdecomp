@@ -12,7 +12,7 @@ Progress can be tracked in some way by the generated [header](include/mkds-decom
 
 - An [export script](export.py) is used to export current documented functions/enums/structs/global objects to the header and symbols mentioned above. This are conveniently generated so they can be directly used for [ASM hacking](asmhack-example) as a short-term usage for this reversing until the game is done ;)
 
-> TODO: screenshots of basic ASM hacks using reversed functionality
+<img src="asmhack-example/demo.png" alt="drawing" width="192"/>
 
 ## Code reconstruction
 
