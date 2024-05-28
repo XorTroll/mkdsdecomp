@@ -2,7 +2,10 @@
 
 > A work-in-progress decompilation project of Mario Kart DS
 
-While the obvious long-term goal of this project is to 100% document and understand MKDS, ASM hacking and the better understanding of yet not fully documented DS formats, specifications... are interesting short-term goals that motivate work on reversing this game.
+<img src="asmhack-example/demo.png" alt="drawing" width="192"/>
+<img src="save-editor/screenshots/0.png" alt="drawing" width="75%"/>
+
+While the obvious long-term goal of this project is to 100% document and understand MKDS, there are interesting short-term goals that motivate work on reversing this game: ASM hacking, better understanding of yet not fully documented DS formats, additional tools thanks to this effort (like the save editor featured here)...
 
 ## Decompilation progress
 
