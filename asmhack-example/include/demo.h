@@ -1,7 +1,7 @@
 #ifndef _DEMO_H
 #define _DEMO_H
 
-#include <mkds-decomp.h>
+#include <mkds-decomp-syms.h>
 
 extern void DebugPrint(const char *msg);
 
