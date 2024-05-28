@@ -18,12 +18,12 @@ An [export script](export.py) is used to export current documented functions/enu
 
 Reversing save-data format and encryption/decryption allowed to create an almost fully-featured online Mario Kart DS savedata editor:
 
-<img src="save-editor/screenshots/0.png" alt="drawing" width="192"/>
-<img src="save-editor/screenshots/1.png" alt="drawing" width="192"/>
-<img src="save-editor/screenshots/2.png" alt="drawing" width="192"/>
-<img src="save-editor/screenshots/3.png" alt="drawing" width="192"/>
-<img src="save-editor/screenshots/4.png" alt="drawing" width="192"/>
-<img src="save-editor/screenshots/5.png" alt="drawing" width="192"/>
+<img src="save-editor/screenshots/0.png" alt="drawing"/>
+<img src="save-editor/screenshots/1.png" alt="drawing"/>
+<img src="save-editor/screenshots/2.png" alt="drawing"/>
+<img src="save-editor/screenshots/3.png" alt="drawing"/>
+<img src="save-editor/screenshots/4.png" alt="drawing"/>
+<img src="save-editor/screenshots/5.png" alt="drawing"/>
 
 ## Code reconstruction
 
