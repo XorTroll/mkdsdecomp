@@ -15,6 +15,14 @@ typedef uint64_t u64;
 
 #define NTR_BIT(n) (1 << (n))
 
+extern void DebugLog(const char *msg);
+
+#define DebugLogf(fmt, ...) { \
+    char tmp_buf[0x200]; \
+    snprintf(tmp_buf, sizeof(tmp_buf) - 1, fmt, ##__VA_ARGS__); \
+    DebugLog(tmp_buf); \
+}
+
 // TODO: define registers properly
 
 #endif

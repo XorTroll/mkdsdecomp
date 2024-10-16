@@ -29,6 +29,7 @@ void InitializeSomeStuff(void) {
 
 void InitializeEverything(void) {
     InitializeSomeStuff();
+    DebugLog("**** InitializeSomeStuff done\n");
 
     // <screen brightness setup>();
 
@@ -36,12 +37,17 @@ void InitializeEverything(void) {
     g_GlobalHeapHolder.heap_start_addr = Os_GetMemoryRegionStartAddress(Os_MemoryRegion_MainRam);
 
     MemoryRegionAddressAccess();
+    DebugLog("**** MemoryRegionAddressAccess done\n");
 
     void *heap_start = Os_GetMemoryRegionStartAddress(Os_MemoryRegion_MainRam);
     void *heap_end = Os_GetMemoryRegionEndAddress(Os_MemoryRegion_MainRam);
     g_GlobalHeapHolder.global_heap_hnd = Mem_CreateExpHeap(heap_start, heap_end - heap_start);
 
+    DebugLog("**** Mem_CreateExpHeap done\n");
+
     ExecutionContext_Create(&g_StartExecutionContext, NULL);
+
+    DebugLog("**** ExecutionContext_Create done\n");
 
     // This string appears to be unused
     g_GlobalHeapHolder.main_proc_str = "MainProc";
@@ -49,22 +55,18 @@ void InitializeEverything(void) {
     // <function that inits some object>();
 }
 
-extern void PrintInit();
-extern void PrintString(size_t len, const char *str);
-
 void SetExecuteStart(ExecutionContextFunction start_fn) {
     ExecutionContext_SetFunction(&g_StartExecutionContext, start_fn);
+
+    DebugLog("**** Jumping to BEEF!\n");
 
     // Unused dummy argument
     ExecutionContext_Execute(&g_StartExecutionContext, (void*)0xBEEF);
 }
 
-#define LOOP_PRINT(str) \
-    PrintInit(); \
-    PrintString(__builtin_strlen(str), str); \
-    while(1);
-
 void NtrMain(void) {
+    DebugLog("**** Hello world!\n");
     InitializeEverything();
+    DebugLog("**** InitializeEverything done\n");
     SetExecuteStart(StartExecuteFunction);
 }

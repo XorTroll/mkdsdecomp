@@ -11,7 +11,7 @@ size_t GetSoundBufferAllocationSize(u16 boot_indicator) {
     }
 }
 
-size_t AllocateHeapsAndBuffers(Mem_HeapHandle *base_heap_hnd, Mem_HeapHandle *out_global_obj_heap_hnd, void **out_sound_buf, Mem_HeapHandle *out_archive_heap_hnd_1, Mem_HeapHandle *out_archive_heap_hnd_2, Mem_HeapHandle *out_archive_heap_hnd_3) {
+size_t AllocateHeapsAndBuffers(Mem_HeapHandle base_heap_hnd, Mem_HeapHandle *out_global_obj_heap_hnd, void **out_sound_buf, Mem_HeapHandle *out_archive_heap_hnd_1, Mem_HeapHandle *out_archive_heap_hnd_2, Mem_HeapHandle *out_archive_heap_hnd_3) {
     if(NTR_BIOS_BOOT_INDICATOR == Bios_BootIndicatorType_DownloadPlay) {
         *out_global_obj_heap_hnd = Mem_CreateChildFrameHeapFromTail(base_heap_hnd, 0x19000);
     }
@@ -46,20 +46,27 @@ size_t AllocateHeapsAndBuffers(Mem_HeapHandle *base_heap_hnd, Mem_HeapHandle *ou
 
 void InitializeGlobalObjects(void) {
     ExecutionContext *ctx = GetActiveExecutionContext();
+    DebugLog("**** GetActiveExecutionContext done\n");
     Mem_HeapHandle base_heap_hnd = ExecutionContext_GetHeapHandle(ctx);
+    DebugLog("**** GetActiveExecutionContext done\n");
 
     Mem_HeapHandle global_obj_heap_hnd;
     void *sound_buf;
     Mem_HeapHandle archive_heap_hnd_1;
     Mem_HeapHandle archive_heap_hnd_2;
     Mem_HeapHandle archive_heap_hnd_3;
+    DebugLog("**** AllocateHeapsAndBuffers start\n");
     size_t sound_buf_size = AllocateHeapsAndBuffers(base_heap_hnd, &global_obj_heap_hnd, &sound_buf, &archive_heap_hnd_1, &archive_heap_hnd_2, &archive_heap_hnd_3);
+    DebugLog("**** AllocateHeapsAndBuffers end\n");
 
     // TODO: many, many global objects are allocated here afterwards
     while(1);
 }
 
 void StartExecuteFunction(void*) {
+    DebugLog("**** StartExecuteFunction start\n");
+
     InitializeGlobalObjects();
     // <function that uses another exec ctx to run the main loop>();
+    DebugLog("**** StartExecuteFunction end\n");
 }
