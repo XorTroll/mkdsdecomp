@@ -2,7 +2,7 @@
 #include "main.h"
 
 // TODO: BSS? where is this NULL'd on startup?
-ExecutionContext *g_ActiveExecutionContext = NULL;
+ExecutionContext *g_ActiveExecutionContext;
 
 void ExecutionContext_Create(ExecutionContext *ctx, ExecutionContextFunction fn_ptr) {
     ctx->unk_unused = 0;

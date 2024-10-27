@@ -50,12 +50,6 @@ _start:
 /*
     sub sp, r1, #4
 */
-
-    @ TEST TEST
-    mov r0, #0xFF
-    ldr r1, =__end__
-    mov r2, #0x4000
-    bl Crt0_MemorySet32
     
     @ Clear DTCM
     mov r0, #0

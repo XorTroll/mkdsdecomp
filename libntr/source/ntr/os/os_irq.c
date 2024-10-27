@@ -29,7 +29,7 @@ void Os_DisableIrqHandler(Os_IrqFlag irq_flag) {
 }
 
 static inline bool Os_IsDmaIrqType(Os_IrqType type) {
-    return (type >= Os_IrqType_DmaChannel_0) && (type < Os_IrqType_DmaChannel_3);
+    return (type >= Os_IrqType_DmaChannel_0) && (type <= Os_IrqType_DmaChannel_3);
 }
 
 static inline Os_IrqSpecialHandlerEntry *Os_GetDmaIrqSpecialHandlerEntry(Os_IrqType dma_type) {
@@ -38,7 +38,7 @@ static inline Os_IrqSpecialHandlerEntry *Os_GetDmaIrqSpecialHandlerEntry(Os_IrqT
 }
 
 static inline bool Os_IsTimerIrqType(Os_IrqType type) {
-    return (type >= Os_IrqType_Timer_0) && (type < Os_IrqType_Timer_3);
+    return (type >= Os_IrqType_Timer_0) && (type <= Os_IrqType_Timer_3);
 }
 
 static inline Os_IrqSpecialHandlerEntry *Os_GetTimerIrqSpecialHandlerEntry(Os_IrqType timer_type) {
@@ -57,7 +57,6 @@ void Os_SetIrqHandler(Os_IrqFlag irq_flag, Os_IrqHandlerFn fn) {
             }
             else {
                 if(Os_IsTimerIrqType(type)) {
-                    // Slots 4-7, hence last 4 special entries (type is some value 3-6)
                     special_entry_p = Os_GetTimerIrqSpecialHandlerEntry(type);
                 }
                 else {

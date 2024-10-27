@@ -60,7 +60,7 @@ void InitializeEverything(void) {
 
     // TODO: <screen brightness contexts setup>();
 
-    g_GlobalHeapHolder.some_ptr = NTR_MEM_ADDR_MAIN_CODE_START;
+    g_GlobalHeapHolder.some_ptr = (void*)NTR_MEM_ADDR_MAIN_CODE_START;
     g_GlobalHeapHolder.heap_start_addr = Os_GetMemoryRegionStartAddress(Os_MemoryRegion_MainRam);
 
     MemoryRegionAddressAccess();

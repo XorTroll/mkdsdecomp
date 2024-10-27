@@ -10,7 +10,7 @@
 
 #define NTR_EXTRA_ENABLE_DEBUGLOG
 
-extern void Extra_DebugLog(const char *msg);
+void Extra_DebugLog(const char *msg);
 
 // Note: preceding all logs with the identifier below to make them more identifiable in all the console output emulators generate
 
