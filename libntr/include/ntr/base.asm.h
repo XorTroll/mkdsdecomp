@@ -11,8 +11,6 @@
 \name:
 .endm
 
-#define NTR_DEBUG_LOG_BUF_SIZE 0x200
-
 #endif
 
 #endif

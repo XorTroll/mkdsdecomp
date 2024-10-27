@@ -1,7 +1,7 @@
 #ifndef _MKDS_MAIN_H
 #define _MKDS_MAIN_H
 
-#include <ntr/mem.h>
+#include "base.h"
 
 typedef struct GlobalHeapHolder {
     u32 unk_maybe_fn;

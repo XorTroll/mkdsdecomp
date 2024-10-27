@@ -46,27 +46,21 @@ size_t AllocateHeapsAndBuffers(Mem_HeapHandle base_heap_hnd, Mem_HeapHandle *out
 
 void InitializeGlobalObjects(void) {
     ExecutionContext *ctx = GetActiveExecutionContext();
-    DebugLog("**** GetActiveExecutionContext done\n");
     Mem_HeapHandle base_heap_hnd = ExecutionContext_GetHeapHandle(ctx);
-    DebugLog("**** GetActiveExecutionContext done\n");
 
     Mem_HeapHandle global_obj_heap_hnd;
     void *sound_buf;
     Mem_HeapHandle archive_heap_hnd_1;
     Mem_HeapHandle archive_heap_hnd_2;
     Mem_HeapHandle archive_heap_hnd_3;
-    DebugLog("**** AllocateHeapsAndBuffers start\n");
     size_t sound_buf_size = AllocateHeapsAndBuffers(base_heap_hnd, &global_obj_heap_hnd, &sound_buf, &archive_heap_hnd_1, &archive_heap_hnd_2, &archive_heap_hnd_3);
-    DebugLog("**** AllocateHeapsAndBuffers end\n");
+    NTR_EXTRA_DEBUGLOGF("AllocateHeapsAndBuffers done");
 
-    // TODO: many, many global objects are allocated here afterwards
-    while(1);
+    // TODO: <a shit ton of important global objects are created then>();
 }
 
 void StartExecuteFunction(void*) {
-    DebugLog("**** StartExecuteFunction start\n");
-
     InitializeGlobalObjects();
     // <function that uses another exec ctx to run the main loop>();
-    DebugLog("**** StartExecuteFunction end\n");
+    NTR_EXTRA_DEBUGLOGF("StartExecuteFunction done");
 }

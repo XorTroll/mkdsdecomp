@@ -1,6 +1,6 @@
 #define _MKDS_EXEC_H
 
-#include "ntr/mem.h"
+#include "base.h"
 
 typedef void (*ExecutionContextFunction)(void*);
 

@@ -9,8 +9,8 @@ typedef struct Os_Alarm {
     u32 tag;
     u32 fire_tick;
     u32 fire_tick_2;
-    Os_Alarm *alarm_prev;
-    Os_Alarm *alarm_next;
+    struct Os_Alarm *alarm_prev;
+    struct Os_Alarm *alarm_next;
     u32 period_l;
     u32 period_h;
     u32 start;
@@ -18,6 +18,18 @@ typedef struct Os_Alarm {
     u32 unk;
 } Os_Alarm;
 
+typedef struct Os_AlarmQueue {
+  Os_Alarm *prev_alarm;
+  Os_Alarm *next_alarm;
+} Os_AlarmQueue;
+
+void Os_InitializeAlarm(void);
+
 void Os_Alarm_Create(Os_Alarm *alarm);
+
+inline void Os_AlarmQueue_Initialize(Os_AlarmQueue *queue) {
+    queue->prev_alarm = NULL;
+    queue->next_alarm = NULL;
+}
 
 #endif

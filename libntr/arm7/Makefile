@@ -9,6 +9,8 @@ include $(DEVKITARM)/ds_rules
 
 TOPDIR ?= $(CURDIR)/..
 
+include $(TOPDIR)/common/Makefile
+
 #---------------------------------------------------------------------------------
 # BUILD is the directory where object files & intermediate files will be placed
 # SOURCES is a list of directories containing source code
@@ -17,7 +19,7 @@ TOPDIR ?= $(CURDIR)/..
 # all directories are relative to this makefile
 #---------------------------------------------------------------------------------
 BUILD		:=	build
-SOURCES		:=	../source ../source/ntr ../source/ntr/arm7
+SOURCES		:=	$(COMMON_SOURCES) ../source/ntr/arm7
 INCLUDES	:=	../include
 
 #---------------------------------------------------------------------------------

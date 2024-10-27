@@ -2,7 +2,7 @@
 #include "main.h"
 
 // TODO: BSS? where is this NULL'd on startup?
-ExecutionContext *g_ActiveExecutionContext;
+ExecutionContext *g_ActiveExecutionContext = NULL;
 
 void ExecutionContext_Create(ExecutionContext *ctx, ExecutionContextFunction fn_ptr) {
     ctx->unk_unused = 0;
@@ -13,7 +13,7 @@ void ExecutionContext_Create(ExecutionContext *ctx, ExecutionContextFunction fn_
 }
 
 Mem_HeapHandle ExecutionContext_GetHeapHandle(ExecutionContext *ctx) {
-    // This could easily be inlined...
+    // This could easily be inlined... but it's not in the actual game ;)
     return ctx->cur_heap_hnd;
 }
 

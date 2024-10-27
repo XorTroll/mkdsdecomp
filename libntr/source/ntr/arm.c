@@ -2,12 +2,13 @@
 #include <ntr/math.h>
 
 void Arm_MathContext_Load(Arm_MathContext *ctx) {
-
+    // TODO... (asm?)
 }
 
 void Arm_MathContext_Save(Arm_MathContext *ctx) {
     ctx->div_numer_param_h = NTR_MATH_DIV_NUMER_H;
     ctx->div_numer_param_l = NTR_MATH_DIV_NUMER_L;
+    // TODO...
 }
 
 void Arm_Context_Create(Arm_Context *ctx, uintptr_t pc_addr, uintptr_t sp_addr) {

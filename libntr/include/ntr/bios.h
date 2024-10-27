@@ -1,25 +1,10 @@
 #ifndef _NTR_BIOS_H
 #define _NTR_BIOS_H
 
-#include "os/os_thread.h"
+#include <ntr/os/os_thread.h>
+#include <ntr/mem/mem_addr.h>
 
 // Definitions for all the various fields set by the BIOS in the RAM
-
-// TODO: consider defining a struct for this?
-
-#define NTR_BIOS_DTCM_STACK_SIZE 0xC00
-
-typedef struct Bios_DtcmRegion {
-    Os_ThreadQueue irq_queue;
-    void *irq_handlers[22];
-    u32 unk[712];
-    u8 launcher_thr_stack[0x2800]; // This size is probably not fixed
-    u8 svc_stack[NTR_BIOS_DTCM_STACK_SIZE];
-    // <more unknown stuff>
-} Bios_DtcmRegion;
-
-extern void *__dtcm_start;
-#define NTR_BIOS_DTCM_REGION ((volatile Bios_DtcmRegion*)(__dtcm_start))
 
 typedef enum Bios_BootIndicatorType {
     Bios_BootIndicatorType_Normal = 1,

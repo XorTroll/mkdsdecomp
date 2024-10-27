@@ -4,9 +4,9 @@ ENTRY(_start)
 
 MEMORY {
 	ewram	: ORIGIN = 0x02000000, LENGTH = 4M - 512k
-	dtcm	: ORIGIN = 0x027c0000, LENGTH = 16K
+	dtcm	: ORIGIN = 0x027E0000, LENGTH = 16K
 	vectors	: ORIGIN = 0x01000000, LENGTH = 256
-	itcm	: ORIGIN = 0x01000100, LENGTH = 32K - 256
+	itcm	: ORIGIN = 0x01FF8000, LENGTH = 32K
 }
 
 
@@ -27,7 +27,6 @@ PHDRS {
 	dtcm    PT_LOAD FLAGS(7);
 	itcm    PT_LOAD FLAGS(7);
 	vectors PT_LOAD FLAGS(7);
-	twl     PT_LOAD FLAGS(0x100007);
 }
 
 SECTIONS
@@ -51,12 +50,12 @@ SECTIONS
 
 	.text :   /* ALIGN (4): */
 	{
-		*(EXCLUDE_FILE(*.itcm* *.vectors* *.twl*) .text)
-		*(EXCLUDE_FILE(*.itcm* *.vectors* *.twl*) .stub)
-		*(EXCLUDE_FILE(*.itcm* *.vectors* *.twl*) .text.*)
+		*(EXCLUDE_FILE(*.itcm* *.vectors*) .text)
+		*(EXCLUDE_FILE(*.itcm* *.vectors*) .stub)
+		*(EXCLUDE_FILE(*.itcm* *.vectors*) .text.*)
 		/* .gnu.warning sections are handled specially by elf32.em.  */
-		*(EXCLUDE_FILE(*.twl*) .gnu.warning)
-		*(EXCLUDE_FILE(*.twl*) .gnu.linkonce.t*)
+		*(.gnu.warning)
+		*(.gnu.linkonce.t*)
 		*(.glue_7)
 		*(.glue_7t)
 		. = ALIGN(4);  /* REQUIRED. LD is flaky without it. */
@@ -71,11 +70,11 @@ SECTIONS
 
 	.rodata :
 	{
-		*(EXCLUDE_FILE(*.twl*) .rodata)
+		*(.rodata)
 		*all.rodata*(*)
-		*(EXCLUDE_FILE(*.twl*) .roda)
-		*(EXCLUDE_FILE(*.twl*) .rodata.*)
-		*(EXCLUDE_FILE(*.twl*) .gnu.linkonce.r*)
+		*(.roda)
+		*(.rodata.*)
+		*(.gnu.linkonce.r*)
 		SORT(CONSTRUCTORS)
 		. = ALIGN(4);   /* REQUIRED. LD is flaky without it. */
 	} >ewram :main = 0xff
@@ -161,9 +160,9 @@ SECTIONS
 	.data ALIGN(4) :
 	{
 		__data_start = ABSOLUTE(.);
-		*(EXCLUDE_FILE(*.twl*) .data)
-		*(EXCLUDE_FILE(*.twl*) .data.*)
-		*(EXCLUDE_FILE(*.twl*) .gnu.linkonce.d*)
+		*(.data)
+		*(.data.*)
+		*(.gnu.linkonce.d*)
 		CONSTRUCTORS
 		. = ALIGN(4);
 		__data_end = ABSOLUTE(.) ;
@@ -178,6 +177,7 @@ SECTIONS
 		*(.dtcm)
 		*(.dtcm.*)
 		. = ALIGN(4);
+		. = ORIGIN(dtcm) + LENGTH(dtcm);
 		__dtcm_end = ABSOLUTE(.);
 	} >dtcm AT>ewram :dtcm = 0xff
 
@@ -188,6 +188,7 @@ SECTIONS
 		*(.itcm)
 		*.itcm*(.text .stub .text.*)
 		. = ALIGN(4);
+		. = ORIGIN(itcm) + LENGTH(itcm);
 		__itcm_end = ABSOLUTE(.);
 	} >itcm AT>ewram :itcm = 0xff
 
@@ -213,42 +214,14 @@ SECTIONS
 	{
 		__bss_start = ABSOLUTE(.);
 		__bss_start__ = ABSOLUTE(.);
-		*(EXCLUDE_FILE(*.twl*) .dynbss)
-		*(EXCLUDE_FILE(*.twl*) .gnu.linkonce.b*)
-		*(EXCLUDE_FILE(*.twl*) .bss*)
-		*(EXCLUDE_FILE(*.twl*) COMMON)
+		*(.dynbss)
+		*(.gnu.linkonce.b*)
+		*(.bss*)
+		*(COMMON)
 		. = ALIGN(4);    /* REQUIRED. LD is flaky without it. */
 		__bss_end__ = ABSOLUTE(.) ;
 		__end__ = ABSOLUTE(.) ;
 	} >ewram :NONE
-
-	.twl __end__ : AT(MAX(0x2400000,MAX(__end__,LOADADDR(.vectors)+SIZEOF(.vectors))))
-	{
-		__arm9i_lma__ = LOADADDR(.twl);
-		__arm9i_start__ = ABSOLUTE(.);
-		*(.twl)
-		*.twl*(.text .stub .text.* .gnu.linkonce.t.*)
-		*.twl*(.rodata)
-		*.twl*(.roda)
-		*.twl*(.rodata.*)
-		*.twl*(.data)
-		*.twl*(.data.*)
-		*.twl*(.gnu.linkonce.d*)
-		__arm9i_end__ = ABSOLUTE(.);
-	} :twl
-
-	.twl_bss __arm9i_end__ (NOLOAD):
-	{
-		__twl_bss_start__ = ABSOLUTE(.);
-		*(.twl_bss)
-		*.twl*(.dynbss)
-		*.twl*(.gnu.linkonce.b*)
-		*.twl*(.bss*)
-		*.twl*(COMMON)
-		. = ALIGN(4);    /* REQUIRED. LD is flaky without it. */
-		__twl_bss_end__ = ABSOLUTE(.);
-		__twl_end__ = ABSOLUTE(.);
-	} :NONE
 
 	/* Stabs debugging sections.  */
 	.stab 0 : { *(.stab) }

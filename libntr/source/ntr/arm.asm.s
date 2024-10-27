@@ -3,9 +3,6 @@
 .text
 .arm
 
-NTR_BEGIN_ASM_FN Arm_FlushAll
-    
-
 NTR_BEGIN_ASM_FN Arm_FlushRange
     mov r12, #0
     add r1, r1, r0

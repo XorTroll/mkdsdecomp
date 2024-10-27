@@ -3,6 +3,30 @@
 
 #include <ntr/base.h>
 
+typedef enum Os_IrqType {
+    Os_IrqType_VBlank = 0,
+    Os_IrqType_HBlank = 1,
+    Os_IrqType_VCounterMatch = 2,
+    Os_IrqType_Timer_0 = 3,
+    Os_IrqType_Timer_1 = 4,
+    Os_IrqType_Timer_2 = 5,
+    Os_IrqType_Timer_3 = 6,
+    Os_IrqType_DmaChannel_0 = 8,
+    Os_IrqType_DmaChannel_1 = 9,
+    Os_IrqType_DmaChannel_2 = 10,
+    Os_IrqType_DmaChannel_3 = 11,
+    Os_IrqType_Keypad = 12,
+    Os_IrqType_GbaSlot = 13,
+    // ...
+    Os_IrqType_IpcSync = 16,
+    Os_IrqType_IpcSend = 17,
+    Os_IrqType_IpcReceive = 18,
+    Os_IrqType_CardTransferCompletion = 19,
+    Os_IrqType_CardIreqMc = 20,
+    Os_IrqType_GeometryCommand = 21,
+    Os_IrqType_Count
+} Os_IrqType;
+
 typedef enum Os_IrqFlag {
     Os_IrqFlag_VBlank = NTR_BIT(0),
     Os_IrqFlag_HBlank = NTR_BIT(1),
@@ -26,7 +50,16 @@ typedef enum Os_IrqFlag {
     Os_IrqFlag_GeometryCommand = NTR_BIT(21)
 } Os_IrqFlag;
 
+typedef void (*Os_IrqHandlerFn)(void);
+
+u32 Os_DisableIrq(void);
+u32 Os_EnableIrq(void);
+void Os_RestoreIrq(u32 prev_state);
+
 void Os_EnableIrqHandler(Os_IrqFlag irq_flag);
 void Os_DisableIrqHandler(Os_IrqFlag irq_flag);
+
+void Os_SetIrqHandler(Os_IrqFlag irq_flag, Os_IrqHandlerFn fn);
+Os_IrqHandlerFn Os_GetIrqHandler(Os_IrqFlag irq_flag);
 
 #endif

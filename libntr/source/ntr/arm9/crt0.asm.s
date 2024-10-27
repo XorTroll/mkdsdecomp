@@ -51,6 +51,12 @@ _start:
     sub sp, r1, #4
 */
 
+    @ TEST TEST
+    mov r0, #0xFF
+    ldr r1, =__end__
+    mov r2, #0x4000
+    bl Crt0_MemorySet32
+    
     @ Clear DTCM
     mov r0, #0
     ldr r1, =__dtcm_start
@@ -100,6 +106,7 @@ InlinedFlushLoop:
     blt InlinedFlushLoop
 */
 
+    mov r0, #0
     @ Zero this address - is this set/used by arm7, maybe an undocumented value...?
     ldr r1, =#0x027FFF9C
     str r0, [r1]
@@ -111,6 +118,9 @@ InlinedFlushLoop:
     ldr r0, =0x01FF8000 @ what even is this value?
     str r0, [r1]
 */
+
+    @ (unofficial) clean BSS in this way for now
+    bl Crt0_CleanBss
 
     @ TODO: RE call to function which resets some flag and some fn pointers, which are used elsewhere
 

@@ -13,7 +13,7 @@ Progress can be tracked in some way by the generated [types header](include/mkds
 
 ## ASM hacking utilities
 
-An [export script](export.py) is used to export current documented functions/enums/structs/global objects to the header and symbols mentioned above. This are conveniently generated so they can be directly used for [ASM hacking](asmhack-example) as a short-term usage for this reversing until the game is done ;)
+An [export script](idadb-export.py) is used to export current documented functions/enums/structs/global objects to the header and symbols mentioned above. These are conveniently generated so they can be directly used for [ASM hacking](asmhack-example) as a short-term usage for this reversing until the game is done ;)
 
 <img src="asmhack-example/demo.png" alt="drawing" width="192"/>
 

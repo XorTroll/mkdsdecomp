@@ -1,18 +1,18 @@
-#include <ntr/os.h>
+#include <ntr/os/os_init.h>
+#include <ntr/os/os_valarm.h>
+#include <ntr/os/os_irq.h>
 #include <ntr/arm.h>
 #include <ntr/bios.h>
 
 // TODO: is this common or ARM9-specific?
 
-// Note: this is technically an int
-bool g_MemoryRegionsInitialized = false;
+int g_MemoryRegionsInitialized = false;
 
-bool g_ForceDebugMode = false;
-
-// TODO: this size probably was not a fixed constant, rather something subject to change...? maybe compiler-emitted?
-int g_SomeUnknownSize = 0x2800;
+int g_MainExRegionEnabled = false;
 
 u32 g_DebugFlags = UINT32_MAX;
+
+static NTR_MEM_ADDR_DTCM Os_ThreadQueue g_IrqThreadQueue;
 
 typedef enum Os_GbaSlotFlag {
     Os_GbaSlotFlag_MagicNINTENDO = NTR_BIT(24),
@@ -40,6 +40,10 @@ bool Os_ExistsSioConnection(void) {
     }
 }
 
+bool Os_IsEmulator(void) {
+    return false;
+}
+
 u32 Os_GetDebugFlags(void) {
     // Can't default them to zero
     if(g_DebugFlags == UINT32_MAX) {
@@ -47,7 +51,7 @@ u32 Os_GetDebugFlags(void) {
         // u32 gba_flags = <get some flags related to what's in the gba slot>();
 
         u32 base_flags;
-        if(false /* <some function used elsewhere that just returns false>() */) {
+        if(Os_IsEmulator()) {
             base_flags = gba_flags | Os_DebugFlag_Unk1;
         }
         else if(Os_ExistsSioConnection()) {
@@ -69,42 +73,40 @@ u32 Os_GetDebugFlags(void) {
 
 void Os_InitializeSvcStack(void) {
     // Set stack magics at the stack top/bottom
-    *(volatile u32*)NTR_BIOS_DTCM_REGION->svc_stack = NTR_OS_THREAD_STACK_TOP_MAGIC;
-    *((volatile u32*)(NTR_BIOS_DTCM_REGION->svc_stack + NTR_BIOS_DTCM_STACK_SIZE) - 1) = NTR_OS_THREAD_STACK_TOP_MAGIC;
+    *(u32*)(NTR_MEM_ADDR_DTCM_IRQ_STACK_BOTTOM - sizeof(u32)) = NTR_OS_THREAD_STACK_BOTTOM_MAGIC;
+    *(u32*)(NTR_MEM_ADDR_DTCM_IRQ_STACK_TOP) = NTR_OS_THREAD_STACK_TOP_MAGIC;
 }
 
 void Os_InitializeIrqThreadQueue(void) {
-    Os_ThreadQueue_Initialize(&NTR_BIOS_DTCM_REGION->irq_queue);
+    Os_ThreadQueue_Initialize(&g_IrqThreadQueue);
 }
 
 void *Os_ComputeMemoryRegionStartAddress(Os_MemoryRegion region) {
     uintptr_t addr;
 
-    // TODO: how many of these are compiler-emitted?
-    
     switch(region) {
         case Os_MemoryRegion_MainRam:
-            addr = 0x21DA340;
+            addr = NTR_MEM_ADDR_MAIN_RAM_START;
             break;
-        case Os_MemoryRegion_Unknown2:
-            if(g_ForceDebugMode && ((Os_GetDebugFlags() & 0b11) != 1)) {
-                addr = 0x2400000;
+        case Os_MemoryRegion_MainRamEx:
+            if(g_MainExRegionEnabled && ((Os_GetDebugFlags() & 0b11) != 1)) {
+                addr = NTR_MEM_ADDR_MAIN_RAM_EX_START;
             }
             else {
                 addr = 0;
             }
             break;
-        case Os_MemoryRegion_Unknown3:
-            addr = 0x1FFFFA0;
+        case Os_MemoryRegion_Itcm:
+            addr = NTR_MEM_ADDR_ITCM_START;
             break;
-        case Os_MemoryRegion_Unknown4:
-            addr = 0x27E00E0;
+        case Os_MemoryRegion_Dtcm:
+            addr = NTR_MEM_ADDR_DTCM_AUTOLOAD_START;
             break;
-        case Os_MemoryRegion_Unknown5:
-            addr = 0x27FF000;
+        case Os_MemoryRegion_Shared:
+            addr = NTR_MEM_ADDR_SHARED_START;
             break;
-        case Os_MemoryRegion_Unknown6:
-            addr = 0x37F8000;
+        case Os_MemoryRegion_WramMain:
+            addr = NTR_MEM_ADDR_WRAM_MAIN_START;
             break;
         default:
             addr = 0;
@@ -116,45 +118,41 @@ void *Os_ComputeMemoryRegionStartAddress(Os_MemoryRegion region) {
 
 void *Os_ComputeMemoryRegionEndAddress(Os_MemoryRegion region) {
     uintptr_t addr;
-
-    // TODO: how many of these are compiler-emitted?
     
     switch(region) {
         case Os_MemoryRegion_MainRam:
-            addr = 0x23E0000;
+            addr = NTR_MEM_ADDR_MAIN_RAM_END;
             break;
-        case Os_MemoryRegion_Unknown2:
-            if(g_ForceDebugMode && ((Os_GetDebugFlags() & 0b11) != 1)) {
-                addr = 0x2700000;
+        case Os_MemoryRegion_MainRamEx:
+            if(g_MainExRegionEnabled && ((Os_GetDebugFlags() & 0b11) != 1)) {
+                addr = NTR_MEM_ADDR_MAIN_RAM_EX_END;
             }
             else {
                 addr = 0;
             }
             break;
-        case Os_MemoryRegion_Unknown3:
-            addr = 0x2000000;
+        case Os_MemoryRegion_Itcm:
+            addr = NTR_MEM_ADDR_ITCM_END;
             break;
-        case Os_MemoryRegion_Unknown4:
-            addr = 0x27E0000;
-
-            if(g_SomeUnknownSize != 0) {
-                if(g_SomeUnknownSize < 0) {
-                    addr = 0x27E00E0 - g_SomeUnknownSize;
+        case Os_MemoryRegion_Dtcm:
+            addr = NTR_MEM_ADDR_DTCM_START;
+            if(NTR_MEM_ADDR_SYS_STACK_SIZE != 0) {
+                if(NTR_MEM_ADDR_SYS_STACK_SIZE < 0) { // TODO: what does it even mean to have a negative stack size value?
+                    addr = NTR_MEM_ADDR_DTCM_AUTOLOAD_START - NTR_MEM_ADDR_SYS_STACK_SIZE;
                 }
                 else {
-                    addr = 0x27E0000 + 0x3F80 - 0xC00 - g_SomeUnknownSize;
+                    addr = NTR_MEM_ADDR_DTCM_IRQ_STACK_TOP - NTR_MEM_ADDR_SYS_STACK_SIZE;
                 }
             }
-            // at least one of these has to be compiler-emitted, this makes no sense as fixed constants...
-            else if(0x27E0000 < 0x27E00E0) {
-                addr = 0x27E00E0;
+            else if(NTR_MEM_ADDR_DTCM_AUTOLOAD_START > NTR_MEM_ADDR_DTCM_START) {
+                addr = NTR_MEM_ADDR_DTCM_AUTOLOAD_START;
             }
             break;
-        case Os_MemoryRegion_Unknown5:
-            addr = 0x27FF680;
+        case Os_MemoryRegion_Shared:
+            addr = NTR_MEM_ADDR_SHARED_END;
             break;
-        case Os_MemoryRegion_Unknown6:
-            addr = 0x37F8000;
+        case Os_MemoryRegion_WramMain:
+            addr = NTR_MEM_ADDR_WRAM_MAIN_END;
             break;
         default:
             addr = 0;
@@ -164,31 +162,30 @@ void *Os_ComputeMemoryRegionEndAddress(Os_MemoryRegion region) {
     return (void*)addr;
 }
 
-// Technically the first list has a max size of 9 regions, but only indexes 0-6 are used
-#define _NTR_OS_MEM_REGION_START_ADDRESS_LIST (void**)(0x27FFDA0)
-#define _NTR_OS_MEM_REGION_END_ADDRESS_LIST (void**)(0x27FFDC4)
+// Technically the first list has a max size of 9 regions, but only indexes 0-6 are used (here)
 
 void Os_SetMemoryRegionStartAddress(Os_MemoryRegion region, void *addr) {
-    (_NTR_OS_MEM_REGION_START_ADDRESS_LIST)[(int)region] = addr;
+    (NTR_MEM_ADDR_MEM_REGION_START_LIST_START)[(int)region] = addr;
 }
 
 void Os_SetMemoryRegionEndAddress(Os_MemoryRegion region, void *addr) {
-    (_NTR_OS_MEM_REGION_END_ADDRESS_LIST)[(int)region] = addr;
+    (NTR_MEM_ADDR_MEM_REGION_END_LIST_START)[(int)region] = addr;
 }
 
 void *Os_GetMemoryRegionStartAddress(Os_MemoryRegion region) {
-    return (_NTR_OS_MEM_REGION_START_ADDRESS_LIST)[(int)region];
+    return (NTR_MEM_ADDR_MEM_REGION_START_LIST_START)[(int)region];
 }
 
 void *Os_GetMemoryRegionEndAddress(Os_MemoryRegion region) {
-    return (_NTR_OS_MEM_REGION_END_ADDRESS_LIST)[(int)region];
+    return (NTR_MEM_ADDR_MEM_REGION_END_LIST_START)[(int)region];
 }
 
 // These are defined in asm
+
 void Os_SetSystemRomPU(u32 pu_config);
 void Os_SetVectorBasePU(u32 pu_config);
 
-// Yeah, N does it in this order
+// Yes, N does it in this order
 #define _NTR_OS_COMPUTE_SET_REGION(i) ({ \
     void *end_addr_##i = Os_ComputeMemoryRegionEndAddress(i); \
     Os_SetMemoryRegionEndAddress(i, end_addr_##i); \
@@ -203,27 +200,24 @@ void Os_InitializeMemoryRegionAddresses(void) {
         _NTR_OS_COMPUTE_SET_REGION(Os_MemoryRegion_MainRam);
 
         // This one is handled later separately
-        Os_SetMemoryRegionStartAddress(Os_MemoryRegion_Unknown2, 0);
-        Os_SetMemoryRegionEndAddress(Os_MemoryRegion_Unknown2, 0);
+        Os_SetMemoryRegionStartAddress(Os_MemoryRegion_MainRamEx, 0);
+        Os_SetMemoryRegionEndAddress(Os_MemoryRegion_MainRamEx, 0);
 
-        _NTR_OS_COMPUTE_SET_REGION(Os_MemoryRegion_Unknown3);
-        _NTR_OS_COMPUTE_SET_REGION(Os_MemoryRegion_Unknown4);
-        _NTR_OS_COMPUTE_SET_REGION(Os_MemoryRegion_Unknown5);
-        _NTR_OS_COMPUTE_SET_REGION(Os_MemoryRegion_Unknown6);
+        _NTR_OS_COMPUTE_SET_REGION(Os_MemoryRegion_Itcm);
+        _NTR_OS_COMPUTE_SET_REGION(Os_MemoryRegion_Dtcm);
+        _NTR_OS_COMPUTE_SET_REGION(Os_MemoryRegion_Shared);
+        _NTR_OS_COMPUTE_SET_REGION(Os_MemoryRegion_WramMain);
     }
 }
 
-void Os_InitializeMemoryRegionAddress2(void) {
-    // For some reason this is set later
-    _NTR_OS_COMPUTE_SET_REGION(Os_MemoryRegion_Unknown2);
+void Os_InitializeMainExMemoryRegionAddress(void) {
+    // For some reason this is set later... maybe wait until dev has specified whether it is enabled or not?
+    _NTR_OS_COMPUTE_SET_REGION(Os_MemoryRegion_MainRamEx);
 
-    if(!g_ForceDebugMode || ((Os_GetDebugFlags() & 0b11) == 1)) {
-        // I guess this is non-debug behaviour?
-        // Correct main memory from debug 8MB to normal 4MB
-        // Also change 0x027XXXXX to 0x023XXXXX for vector base address
-
-        Os_SetSystemRomPU(0x02000000 | NTR_ARM_PAGE_4M | 1);
-        Os_SetVectorBasePU(0x023C0000 | NTR_ARM_PAGE_128K | 1);
+    if(!g_MainExRegionEnabled || ((Os_GetDebugFlags() & 0b11) == 1)) {
+        // Adapt permissions for not using MainEx?
+        Os_SetSystemRomPU(NTR_MEM_ADDR_MAIN_CODE_START | NTR_ARM_PAGE_4M | 1);
+        Os_SetVectorBasePU(NTR_MEM_ADDR_MAIN_RAM_END | NTR_ARM_PAGE_128K | 1);
     }
 }
 
@@ -231,14 +225,28 @@ void Os_Initialize(void) {
     Os_InitializeMemoryRegionAddresses();
     // TODO: <fifo related init>();
     // TODO: <lock related init>();
-    Os_InitializeMemoryRegionAddress2();
+    Os_InitializeMainExMemoryRegionAddress();
     Os_InitializeIrqThreadQueue();
-    // Os_InitializeSvcStack();
+    Os_InitializeSvcStack();
     // TODO: <init exception handler>();
-
-    // TODO: more functions are called here
+    // TODO: <some mem init>();
+    Os_InitializeVAlarm();
+    // TODO: <some vram init>();
+    // TODO: <threads init>();
+    // TODO: <some other fifo init>();
+    // TODO: <cart init>();
+    // TODO: <another cart init>();
+    // TODO: <yet another fifo init>();
 }
 
-void Os_DefaultDisableForceDebugMode(void) {
-    g_ForceDebugMode = false;
+void Os_DisableMainExRegion(void) {
+    g_MainExRegionEnabled = false;
 }
+
+void Os_Terminate(void) {
+    while(true) {
+        Os_DisableIrq();
+        Os_Halt();
+    }
+}
+

@@ -1,6 +1,9 @@
 #include <ntr/mem.h>
 #include <ntr/util.h>
-#include <ntr/os.h>
+#include <ntr/os/os_irq.h>
+
+#include <ntr/extra/extra_log.h>
+#define _NTR_MEM_DEBUGLOGF(fmt, ...) NTR_EXTRA_DEBUGLOGF("[mem] " fmt, __VA_ARGS__)
 
 static Util_IntrusiveList g_GlobalHeapHeadList;
 static int g_GlobalHeapHeadListInitialized = 0;
@@ -184,7 +187,7 @@ void *Mem_Frame_AllocFromHead(Mem_FrameHeapHead *frm_heap_head, size_t size, siz
         return 0;
     }
     if(_NTR_FRAME_GET_BASE_HEAP_HEAD(frm_heap_head)->option & Mem_CreateOption_ZeroClear) {
-        Mem_Fill32(0, (void*)frm_heap_head->cur_heap_region.start, cur_ptr_end - frm_heap_head->cur_heap_region.start);
+        Mem_CpuFill32(0, (void*)frm_heap_head->cur_heap_region.start, cur_ptr_end - frm_heap_head->cur_heap_region.start);
     }
     void *ptr = (void*)cur_ptr_start_aligned;
     frm_heap_head->cur_heap_region.start = cur_ptr_end;
@@ -197,7 +200,7 @@ void *Mem_Frame_AllocFromTail(Mem_FrameHeapHead *frm_heap_head, size_t size, siz
         return 0;
     }
     if(_NTR_FRAME_GET_BASE_HEAP_HEAD(frm_heap_head)->option & Mem_CreateOption_ZeroClear) {
-        Mem_Fill32(0, (void*)cur_heap_end_aligned, frm_heap_head->cur_heap_region.end - cur_heap_end_aligned);
+        Mem_CpuFill32(0, (void*)cur_heap_end_aligned, frm_heap_head->cur_heap_region.end - cur_heap_end_aligned);
     }
     void *ptr = (void*)cur_heap_end_aligned;
     frm_heap_head->cur_heap_region.end = cur_heap_end_aligned;
@@ -278,6 +281,7 @@ Mem_HeapHandle Mem_Exp_Create(void *ptr, size_t size, u8 option) {
     uintptr_t start = NTR_UTIL_ALIGN_UP((uintptr_t)ptr, 0x4);
 
     if((start <= end) && ((end - start) >= 0x4C)) { // TODO: where does this size come from?
+        _NTR_MEM_DEBUGLOGF("Mem_Exp_Create: start=%p, end=%p", (void*)start, (void*)end);
         return Mem_Exp_Initialize(start, end, option);
     }
     else {
@@ -377,7 +381,8 @@ void *Mem_Exp_ConvertFreeBlockToUsedBlock(Mem_ExpHeapHead *exp_heap_head, Mem_Ex
     }
 
     if(_NTR_EXP_GET_BASE_HEAP_HEAD(exp_heap_head)->option & Mem_CreateOption_ZeroClear) {
-        Mem_Fill32(0, (void*)free_region_front.end, free_region_back.start - free_region_front.end);
+        _NTR_MEM_DEBUGLOGF("Mem_Exp_ConvertFreeBlockToUsedBlock: fill32 ptr=%p size=%d", (void*)free_region_front.end, free_region_back.start - free_region_front.end);
+        Mem_CpuFill32(0, (void*)free_region_front.end, free_region_back.start - free_region_front.end);
     }
 
     Mem_MemoryRegion used_region;
@@ -439,6 +444,8 @@ int Mem_Exp_CoalesceFreedRegion(Mem_ExpHeapHead *heap_head, Mem_MemoryRegion *re
 }
 
 void *Mem_Exp_AllocateFromHead(Mem_HeapHead *heap_head, size_t size, size_t align) {
+    _NTR_MEM_DEBUGLOGF("Mem_Exp_AllocateFromHead: size=%d, align=%d", size, align);
+
     bool is_first_fit = heap_head->exp_heap_head.alloc_mode == Mem_AllocationMode_FirstFit;
     Mem_ExpHeapMemoryBlockHead *found_block_head = NULL;
     uintptr_t found_block = 0;
@@ -474,6 +481,8 @@ void *Mem_Exp_AllocateFromHead(Mem_HeapHead *heap_head, size_t size, size_t alig
 }
 
 void *Mem_Exp_AllocateFromTail(Mem_HeapHead *heap_head, size_t size, size_t align) {
+    _NTR_MEM_DEBUGLOGF("Mem_Exp_AllocateFromTail: size=%d, align=%d", size, align);
+
     bool is_first_fit = heap_head->exp_heap_head.alloc_mode == Mem_AllocationMode_FirstFit;
     Mem_ExpHeapMemoryBlockHead *found_block_head = NULL;
     uintptr_t found_block = 0;
@@ -507,6 +516,8 @@ void *Mem_Exp_AllocateFromTail(Mem_HeapHead *heap_head, size_t size, size_t alig
 }
 
 void *Mem_Exp_Allocate(Mem_HeapHead *heap_head, size_t size, ssize_t align) {
+    _NTR_MEM_DEBUGLOGF("Mem_Exp_Allocate: size=%d, align=%d", size, align);
+    
     // Prevent allocating empty blocks, I guess
     if(size == 0) {
         size = 1;
@@ -538,6 +549,7 @@ void Mem_Exp_Finalize(Mem_HeapHead *heap_head) {
 // ....
 
 Mem_HeapHandle Mem_CreateExpHeap(void *ptr, size_t size) {
+    _NTR_MEM_DEBUGLOGF("Mem_CreateExpHeap: ptr=%p, size=0x%X", ptr, size);
     return Mem_Exp_Create(ptr, size, Mem_CreateOption_ZeroClear);
 }
 
@@ -645,7 +657,7 @@ void Mem_ResizeExpHeap(Mem_HeapHandle heap_handle, void *ptr, size_t size) {
                 }
 
                 if(heap_handle->option & Mem_CreateOption_ZeroClear) {
-                    Mem_Fill32(0, (void*)block_start, region.start - block_start);
+                    Mem_CpuFill32(0, (void*)block_start, region.start - block_start);
                 }
             }
         }
@@ -695,6 +707,7 @@ Mem_HeapHandle Mem_CreateChildExpHeap(Mem_HeapHandle parent_heap_handle) {
     size_t allocatable_size = 0;
     if(parent_heap_handle->magic == _NTR_MEM_EXP_HEAP_HEAD_MAGIC) {
         allocatable_size = Mem_Exp_GetAllocatableSize(parent_heap_handle, 0x4);
+        _NTR_MEM_DEBUGLOGF("Mem_CreateChildExpHeap: parent ExpHeap allocatable_size=%d", allocatable_size);
     }
     else if(parent_heap_handle->magic == _NTR_MEM_FRAME_HEAP_HEAD_MAGIC) {
         allocatable_size = Mem_Frame_GetAllocatableSize(parent_heap_handle, 0x4);
@@ -703,12 +716,13 @@ Mem_HeapHandle Mem_CreateChildExpHeap(Mem_HeapHandle parent_heap_handle) {
     void *allocated_ptr = NULL;
     if(parent_heap_handle->magic == _NTR_MEM_EXP_HEAP_HEAD_MAGIC) {
         allocated_ptr = Mem_Exp_Allocate(parent_heap_handle, allocatable_size, 0x4);
+        _NTR_MEM_DEBUGLOGF("Mem_CreateChildExpHeap: parent ExpHeap alloc ptr=%p", allocated_ptr);
     }
     else if(parent_heap_handle->magic == _NTR_MEM_FRAME_HEAP_HEAD_MAGIC) {
         allocated_ptr = Mem_Frame_Allocate(parent_heap_handle, allocatable_size, 0x4);
     }
 
-    return Mem_Exp_Create(allocated_ptr, allocatable_size, /*Mem_CreateOption_ZeroClear*/0);
+    return Mem_Exp_Create(allocated_ptr, allocatable_size, Mem_CreateOption_ZeroClear);
 }
 
 Mem_HeapHandle Mem_CreateChildFrameHeapFromHead(Mem_HeapHandle parent_heap_handle, size_t size) {
@@ -729,20 +743,10 @@ Mem_HeapHandle Mem_CreateChildFrameHeapFromTail(Mem_HeapHandle parent_heap_handl
         ptr = Mem_Exp_Allocate(parent_heap_handle, size, -0x4);
     }
     else if(parent_heap_handle->magic == _NTR_MEM_FRAME_HEAP_HEAD_MAGIC) {
-        u32 old_state = Os_DisableIRQ();
+        u32 old_state = Os_DisableIrq();
         ptr = Mem_Frame_Allocate(parent_heap_handle, size, -0x4);
-        Os_RestoreIRQ(old_state);
+        Os_RestoreIrq(old_state);
     }
 
     return Mem_Frame_Create(ptr, size, /*Mem_CreateOption_ZeroClear*/0);
-}
-
-void Mem_Fill32(int val, void *src, size_t size) {
-    u32 *cur_32 = (u32*)src;
-    u32 *end_32 = (u32*)(src + size);
-
-    while(cur_32 < end_32) {
-        *cur_32 = val;
-        cur_32++;
-    }
 }

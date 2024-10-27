@@ -6,23 +6,18 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#include "base.asm.h"
+#include <ntr/base.asm.h>
 
 typedef uint8_t u8;
 typedef uint16_t u16;
 typedef uint32_t u32;
 typedef uint64_t u64;
 
+typedef volatile u8 vu8;
+typedef volatile u16 vu16;
+typedef volatile u32 vu32;
+typedef volatile u64 vu64;
+
 #define NTR_BIT(n) (1 << (n))
-
-extern void DebugLog(const char *msg);
-
-#define DebugLogf(fmt, ...) { \
-    char tmp_buf[0x200]; \
-    snprintf(tmp_buf, sizeof(tmp_buf) - 1, fmt, ##__VA_ARGS__); \
-    DebugLog(tmp_buf); \
-}
-
-// TODO: define registers properly
 
 #endif
