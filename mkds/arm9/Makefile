@@ -21,15 +21,14 @@ INCLUDES	:=	include
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-ARCH	:=	-mthumb -mthumb-interwork
+ARCH	:=	-marm -mno-thumb-interwork
 
-CFLAGS	:=	-g -Wall -Os \
- 			-march=armv5te -mtune=arm946e-s -fomit-frame-pointer\
+CFLAGS	:=	-Wall -O4 \
+ 			-march=armv5te -Wall -Wpedantic -mtune=arm946e-s -fomit-frame-pointer \
 			-ffast-math \
 			$(ARCH)
 
 CFLAGS	+=	$(INCLUDE) -DARM9
-CXXFLAGS	:=	$(CFLAGS) -fno-rtti -fno-exceptions
 
 ASFLAGS	:=	-g $(ARCH) -march=armv5te -mtune=arm946e-s
 

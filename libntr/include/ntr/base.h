@@ -18,6 +18,10 @@ typedef volatile u16 vu16;
 typedef volatile u32 vu32;
 typedef volatile u64 vu64;
 
+typedef u16 char16_t;
+
 #define NTR_BIT(n) (1 << (n))
+
+#define NTR_PACKED __attribute__((packed))
 
 #endif

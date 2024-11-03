@@ -25,7 +25,7 @@ INCLUDES	:=	../include
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-ARCH	:=	-mthumb -mthumb-interwork -mcpu=arm7tdmi -mtune=arm7tdmi -DARM7
+ARCH	:=	-marm -mno-thumb-interwork -mcpu=arm7tdmi -mtune=arm7tdmi -DARM7
 
 CFLAGS	:=	-g -Wall -O1 \
 			-ffunction-sections -fdata-sections \

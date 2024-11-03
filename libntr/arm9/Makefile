@@ -20,13 +20,16 @@ include $(TOPDIR)/common/Makefile
 # all directories are relative to this makefile
 #---------------------------------------------------------------------------------
 BUILD		:=	build
-SOURCES		:=	$(COMMON_SOURCES) ../source/ntr/arm9
+SOURCES		:=	$(COMMON_SOURCES)	../source/ntr/arm9 \
+									../source/ntr/arm9/arm \
+									../source/ntr/arm9/mem \
+									../source/ntr/arm9/os
 INCLUDES	:=	../include
 
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-ARCH	:=	-mthumb -mthumb-interwork -march=armv5te -mtune=arm946e-s -DARM9
+ARCH	:=	-marm -mno-thumb-interwork -march=armv5te -mtune=arm946e-s -DARM9
 
 CFLAGS	:=	-g -Wall -O1\
 			-ffunction-sections -fdata-sections \

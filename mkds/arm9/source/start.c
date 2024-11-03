@@ -1,6 +1,6 @@
 #include "start.h"
 #include "exec.h"
-#include <ntr/bios.h>
+#include <ntr/arm9/bios.h>
 
 size_t GetSoundBufferAllocationSize(u16 boot_indicator) {
     if(boot_indicator == Bios_BootIndicatorType_DownloadPlay) {
@@ -12,14 +12,14 @@ size_t GetSoundBufferAllocationSize(u16 boot_indicator) {
 }
 
 size_t AllocateHeapsAndBuffers(Mem_HeapHandle base_heap_hnd, Mem_HeapHandle *out_global_obj_heap_hnd, void **out_sound_buf, Mem_HeapHandle *out_archive_heap_hnd_1, Mem_HeapHandle *out_archive_heap_hnd_2, Mem_HeapHandle *out_archive_heap_hnd_3) {
-    if(NTR_BIOS_BOOT_INDICATOR == Bios_BootIndicatorType_DownloadPlay) {
+    if(NTR_ARM9_BIOS_SHARED_REGION->boot_indicator == Bios_BootIndicatorType_DownloadPlay) {
         *out_global_obj_heap_hnd = Mem_CreateChildFrameHeapFromTail(base_heap_hnd, 0x19000);
     }
     else {
         *out_global_obj_heap_hnd = Mem_CreateChildFrameHeapFromTail(base_heap_hnd, 0x1B800);
     }
 
-    if(NTR_BIOS_BOOT_INDICATOR == Bios_BootIndicatorType_DownloadPlay) {
+    if(NTR_ARM9_BIOS_SHARED_REGION->boot_indicator == Bios_BootIndicatorType_DownloadPlay) {
         *out_archive_heap_hnd_1 = Mem_CreateChildFrameHeapFromTail(base_heap_hnd, 0x19000);
         *out_archive_heap_hnd_2 = Mem_CreateChildFrameHeapFromTail(base_heap_hnd, 0x4B000);
         *out_archive_heap_hnd_3 = Mem_CreateChildFrameHeapFromTail(base_heap_hnd, 0x1B800);
@@ -32,7 +32,7 @@ size_t AllocateHeapsAndBuffers(Mem_HeapHandle base_heap_hnd, Mem_HeapHandle *out
 
     // This is quite pointless for what's used later
     u16 boot_indicator_mod;
-    if(NTR_BIOS_BOOT_INDICATOR == Bios_BootIndicatorType_DownloadPlay) {
+    if(NTR_ARM9_BIOS_SHARED_REGION->boot_indicator == Bios_BootIndicatorType_DownloadPlay) {
         boot_indicator_mod = Bios_BootIndicatorType_DownloadPlay;
     }
     else {

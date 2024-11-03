@@ -1,5 +1,5 @@
 #include <ntr/base.asm.h>
-#include <ntr/arm.asm.h>
+#include <ntr/arm9/arm/arm.asm.h>
 
 .arch armv5te
 .cpu arm946e-s
@@ -113,9 +113,6 @@ InlinedFlushLoop:
     str r0, [r1]
 */
 
-    @ (unofficial) clean BSS in this way for now
-    bl Crt0_CleanBss
-
     @ TODO: RE call to function which resets some flag and some fn pointers, which are used elsewhere
 
     @ Call nknown empty function
@@ -123,6 +120,9 @@ InlinedFlushLoop:
 
     @ Run the init array
     bl Crt0_RunInitArray
+
+    @ (unofficial) clean BSS in this way for now
+    bl Crt0_CleanBss
 
     @ Finally, call main
     ldr r1, =NtrMain
