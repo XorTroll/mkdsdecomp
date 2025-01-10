@@ -13,7 +13,7 @@ import os
 import shutil
 from datetime import datetime
 
-# Script used from my IDA database to generate all-in-one header and symbols.x files, all ready for some fun ASM hacking
+# Script used with my IDA database to export/generate generate headers, symbols and wrapper ASM files, all ready for some fun ASM hacking
 
 TAB = "    "
 
