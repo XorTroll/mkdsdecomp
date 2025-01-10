@@ -3,6 +3,9 @@ dev/
 build/
 lib/
 backup/
+gen-fs/
+asmhack-examples/re-export/
+build-gen/
 *.bin
 *.elf
 *.nds

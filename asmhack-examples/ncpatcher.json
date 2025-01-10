@@ -1,0 +1,22 @@
+{
+    "$arm_flags": "-masm-syntax-unified -mno-unaligned-access -mfloat-abi=soft -mabi=aapcs",
+    "$c_flags": "-Os -fomit-frame-pointer -ffast-math -fno-builtin -nostdlib -nodefaultlibs -nostartfiles -DSDK_GCC -DSDK_FINALROM",
+    "$cpp_flags": "-fno-rtti -fno-exceptions -std=c++20",
+    "$asm_flags": "-Os -x assembler-with-cpp -fomit-frame-pointer",
+    "$ld_flags": "-lgcc -lc -lstdc++ --use-blx",
+    
+    "backup": "backup",
+    "filesystem": "gen-fs",
+    "toolchain": "arm-none-eabi-",
+    
+    "arm7": {},
+    "arm9": {
+        "target": "arm9.json",
+        "build": "build"
+    },
+    
+    "pre-build": [],
+    "post-build": [],
+    
+    "thread-count": 0
+}
