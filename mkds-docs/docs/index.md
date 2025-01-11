@@ -8,4 +8,4 @@ Feel free to check the existing tools and code at the [the GitHub repository](ht
 
 > Would you like to use decompilated resources to make ASM-hacks? [Check the examples](https://github.com/XorTroll/mkdsdecomp/tree/main/asmhack-examples)!
 
-> Check out our [Mario Kart DS save editor](../save-editor/)!
+> Check out our [Mario Kart DS save editor](save-editor/)!
