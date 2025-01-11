@@ -10,31 +10,34 @@ const u16 *progress2_str = u"You shall suffer\nthe wrath of\nmy minions then.";
 
 const u16 *case2_str = u"Did you really\ntry to quit?\nYou fool...\nyou can't escape.";
 
-u32 g_Counter = 0;
+u32 g_FrameCounter = 0;
 u32 g_Status = 0;
+u32 g_PressFrameCounter = 0;
+int g_LastPress = -1;
 
 void CustomScene_Initialize(SceneExecutionContext *ctx) {
     DebugPrintf("Custom scene init\n");
 
-    g_Counter = 0;
+    g_FrameCounter = 0;
 
     ExecutionContext *ctx2 = GetActiveExecutionContext();
     Mem_HeapHead *heap = ExecutionContext_GetHeapHandle(ctx2);
 
-    DisplayConfig *cfg = CreateDisplayConfig(heap, (void*)(0x21547c8));
+    DisplayConfig *cfg = CreateDisplayConfig(heap, (void*)(0x21547c8)); // Use same init parameters as the Logo scene display config
     DisplayEngineConfig_SetBg1Config(&cfg->top_engine_cfg, 1, 0, 0, 0, 0, 1, 0);
     DisplayEngineConfig_SetBg1Config(&cfg->bottom_engine_cfg, 1, 0, 0, 0, 0, 2, 0);
     SetGlobalDisplayConfig(cfg);
 
-    StructJT jt;
-    Mem_CpuFill8(&jt, 0, sizeof(jt));
-    jt.load_dialog = 1;
-    jt.dialog_font = &g_NftrMarioFont;
-    jt.dialog_flag_1 = 0;
-    jt.dialog_flag_2 = 1;
+    NavigationContextParams params;
+    Mem_CpuFill8(&params, 0, sizeof(params));
+    params.load_text_system = 1;
+    params.text_system_font = &g_NftrMarioFont;
+    params.text_system_load_bg_1_flag = 0; // All uses of the text system set these flags...
+    params.text_system_load_bg_2_flag = 1;
+    params.text_system_load_bg_3_flag = 0;
 
-    VerifySomeTextSystemFiles_from_arm();
-    InitializeGlobalQ_from_arm(heap, &jt);
+    PrepareNavigationContextFiles_from_arm();
+    InitializeNavigationContext_from_arm(heap, &params);
 
     DebugPrintf("Custom scene init end\n");
 }
@@ -43,43 +46,84 @@ void InjectAtMenu2();
 void InjectAtTitle();
 
 void CustomScene_Update(SceneExecutionContext *ctx, u32 frame_count) {
-    DebugPrintf("Custom scene update status %d counter %d\n", g_Status, g_Counter);
+    DebugPrintf("Custom scene update status %d counter %d\n", g_Status, g_FrameCounter);
 
     if(g_Status == 0) {
-        g_Counter++;
+        g_FrameCounter++;
 
-        if(g_Counter > 40) {
-            ShowYesNoDialog_from_arm(caption_str, button1_str, button2_str, 0);
+        if(g_FrameCounter > 40) {
+            int blend_flag_top = true; // Flags for color blending in top/sub screens respectively (won't be really noticed unless the back screen is enabled in the nav context params)
+            int blend_flag_sub = true;
+            int start_button_2_focused = true; // Self-explanatory
+            int fade_in_start_y = TextSystem_FadeY_80; // Controls the fade-in direction
+            int fade_out_end_y = TextSystem_FadeY_160; // Controls the fade-out direction
+            TextSystem_SetFadeInSseqId_from_arm(110); // Just throw a boulder to the user
+            TextSystem_DisplayDoubleButtonDialog_from_arm(caption_str, button1_str, button2_str, start_button_2_focused, blend_flag_top, blend_flag_sub, fade_in_start_y, fade_out_end_y);
+
             g_Status = 1;
-            g_Counter = 0;
+            g_FrameCounter = 0;
         }
     }
     else if(g_Status == 1) {
-        if(sub_2125F54_from_arm()) {
-            sub_2125FC0_from_arm();
+        if(TextSystem_WasAnyDialogButtonPressed_from_arm()) {
+            // User pressed a button in the dialog
+            // Take advantage of this system, only acknowledge the input (and finish the dialog) after 240 frames (~4 seconds) of holding the SAME button
+
+            int cur_press = TextSystem_IsButton2Focused_from_arm();
+            if(g_LastPress == -1) {
+                g_LastPress = cur_press;
+            }
+            else if(g_LastPress != cur_press) {
+                g_LastPress = -1;
+                g_PressFrameCounter = 0;
+            }
+
+            g_PressFrameCounter++;
+            if(g_PressFrameCounter >= 240) {
+                g_LastPress = -1;
+                g_PressFrameCounter = 0;
+                
+                // Fine, close the dialog
+                TextSystem_CloseDialog_from_arm();
+            }
         }
-        else if(DialogMaybeAnyButtonPressed_from_arm()) {
-            if(DialogContext_Button2Pressed_from_arm()) {
-                ShowProgressDialogImpl_from_arm(progress2_str, 1, 1, 1, 0, 1);
+        else if(TextSystem_IsDialogFinished_from_arm()) {
+            // The dialog already faded out and closed
+            // Check the final button press (this is internally kept as the button pressed by the user before we finished the dialog)
+            if(TextSystem_IsButton2Focused_from_arm()) {
+                // Progress dialog on the sub screen
+                int blend_flag_top = true; // Same as above
+                int blend_flag_sub = true;
+                int fade_in_start_y = TextSystem_FadeY_80;
+                int fade_out_end_y = TextSystem_FadeY_160;
+                int enable_progress_anim = true; // Whether to show the rolling-wheel progress sprite/animation
+                TextSystem_DisplayProgressDialog_from_arm(progress2_str, blend_flag_top, blend_flag_sub, fade_in_start_y, fade_out_end_y, enable_progress_anim);
                 g_Status = 2;
             }
             else {
-                ShowProgressDialogImpl_from_arm(progress1_str, 1, 1, 1, 0, 1);
+                // Progress dialog on the top screen
+                int blend_flag_top = true; // Same as above
+                int blend_flag_sub = true;
+                int fade_in_start_y = TextSystem_FadeY_80;
+                int fade_out_end_y = TextSystem_FadeY_160;
+                int enable_top_progress_anim = true; // Now we could show the wheel animation on BOTH screens at the same time (nice, MKDS devs)
+                int enable_sub_progress_anim = true;
+                TextSystem_DisplayProgressDialog_TopScreen_from_arm(progress1_str, blend_flag_top, blend_flag_sub, fade_in_start_y, fade_out_end_y, enable_top_progress_anim, enable_sub_progress_anim);
                 g_Status = 3;
             }
         }
     }
     else if(g_Status == 2) {
-        g_Counter++;
-        if(g_Counter > 200) {
-            g_Counter = 0;
+        g_FrameCounter++;
+        if(g_FrameCounter > 200) {
+            g_FrameCounter = 0;
             g_Status = 4;
         }
     }
     else if(g_Status == 3) {
-        g_Counter++;
-        if(g_Counter > 200) {
-            g_Counter = 0;
+        g_FrameCounter++;
+        if(g_FrameCounter > 200) {
+            g_FrameCounter = 0;
             g_Status = 5;
         }
     }
@@ -89,7 +133,7 @@ void CustomScene_Update(SceneExecutionContext *ctx, u32 frame_count) {
             InjectAtTitle();
 
             g_GlobalCO->next_race.cc_type = CcType_150cc_Mirror;
-            g_GlobalCO->next_race.internal_course_id = InternalCourseId_Award;
+            g_GlobalCO->next_race.internal_course_id = InternalCourseId_rainbow_course;
 
             g_GlobalCO->next_race.racer_entries[0].character_id = CharacterId_Waluigi;
             g_GlobalCO->next_race.racer_entries[0].kart_id = KartId_GoldMantis;
@@ -101,7 +145,7 @@ void CustomScene_Update(SceneExecutionContext *ctx, u32 frame_count) {
             }
 
             g_Status = 999;
-            g_Counter = 0;
+            g_FrameCounter = 0;
             ctx->next_scene_id = SceneId_Race;
         }
     }
@@ -115,31 +159,32 @@ void CustomScene_Update(SceneExecutionContext *ctx, u32 frame_count) {
             g_GlobalCO->next_race.racer_entries[0].type = RacerType_Player;
 
             g_Status = 0;
-            g_Counter = 0;
+            g_FrameCounter = 0;
             ctx->next_scene_id = SceneId_Race;
         }
     }
     else if(g_Status == 6) {
-        ShowProgressDialogImpl_from_arm(case2_str, 1, 1, 1, 0, 1);
-        g_Counter = 0;
+        // I'm not sure if these fade in/out values are intended, or are a non-reachable limit (they make the dialog violently shake :P)
+        TextSystem_DisplayProgressDialog_TopScreen_from_arm(case2_str, true, true, TextSystem_FadeY_255, TextSystem_FadeY_255, true, false);
+        g_FrameCounter = 0;
         g_Status = 7;
     }
     else if(g_Status == 7) {
-        g_Counter++;
+        g_FrameCounter++;
 
-        if(g_Counter > 150) {
-            g_Counter = 0;
+        if(g_FrameCounter > 150) {
+            g_FrameCounter = 0;
             g_Status = 4;
         }
     }
 
-    sub_2125928_from_arm();
+    NavigationContext_OnSceneUpdate_from_arm();
 }
 
 void CustomScene_Vblank(SceneExecutionContext *ctx, u32 frame_count) {
     DebugPrintf("Custom scene vblank\n");
 
-    sub_21258F0_from_arm();
+    NavigationContext_OnSceneVblank_from_arm();
 }
 
 void CustomScene_Finalize(SceneExecutionContext *ctx) {
@@ -149,7 +194,7 @@ void CustomScene_Finalize(SceneExecutionContext *ctx) {
         g_Status = 6;
     }
 
-    ResetGlobalQ_from_arm();
+    DisposeNavigationContext_from_arm();
 }
 
 static const SceneInfo g_CustomSceneInfo = {

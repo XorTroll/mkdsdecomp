@@ -5,6 +5,7 @@
 #include <debug.h>
 
 #include <stddef.h>
+#include <stdbool.h>
 
 #define DebugPrintf(fmt, ...) { \
     char tmp_buf[DEBUG_LOG_BUF_SIZE]; \
