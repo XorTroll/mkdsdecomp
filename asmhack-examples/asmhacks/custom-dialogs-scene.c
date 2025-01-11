@@ -36,8 +36,8 @@ void CustomScene_Initialize(SceneExecutionContext *ctx) {
     params.text_system_load_bg_2_flag = 1;
     params.text_system_load_bg_3_flag = 0;
 
-    PrepareNavigationContextFiles_from_arm();
-    InitializeNavigationContext_from_arm(heap, &params);
+    PrepareNavigationContextFiles();
+    InitializeNavigationContext(heap, &params);
 
     DebugPrintf("Custom scene init end\n");
 }
@@ -57,19 +57,19 @@ void CustomScene_Update(SceneExecutionContext *ctx, u32 frame_count) {
             int start_button_2_focused = true; // Self-explanatory
             int fade_in_start_y = TextSystem_FadeY_80; // Controls the fade-in direction
             int fade_out_end_y = TextSystem_FadeY_160; // Controls the fade-out direction
-            TextSystem_SetFadeInSseqId_from_arm(110); // Just throw a boulder to the user
-            TextSystem_DisplayDoubleButtonDialog_from_arm(caption_str, button1_str, button2_str, start_button_2_focused, blend_flag_top, blend_flag_sub, fade_in_start_y, fade_out_end_y);
+            TextSystem_SetFadeInSseqId(110); // Just throw a boulder to the user
+            TextSystem_DisplayDoubleButtonDialog(caption_str, button1_str, button2_str, start_button_2_focused, blend_flag_top, blend_flag_sub, fade_in_start_y, fade_out_end_y);
 
             g_Status = 1;
             g_FrameCounter = 0;
         }
     }
     else if(g_Status == 1) {
-        if(TextSystem_WasAnyDialogButtonPressed_from_arm()) {
+        if(TextSystem_WasAnyDialogButtonPressed()) {
             // User pressed a button in the dialog
             // Take advantage of this system, only acknowledge the input (and finish the dialog) after 240 frames (~4 seconds) of holding the SAME button
 
-            int cur_press = TextSystem_IsButton2Focused_from_arm();
+            int cur_press = TextSystem_IsButton2Focused();
             if(g_LastPress == -1) {
                 g_LastPress = cur_press;
             }
@@ -84,20 +84,20 @@ void CustomScene_Update(SceneExecutionContext *ctx, u32 frame_count) {
                 g_PressFrameCounter = 0;
                 
                 // Fine, close the dialog
-                TextSystem_CloseDialog_from_arm();
+                TextSystem_CloseDialog();
             }
         }
-        else if(TextSystem_IsDialogFinished_from_arm()) {
+        else if(TextSystem_IsDialogFinished()) {
             // The dialog already faded out and closed
             // Check the final button press (this is internally kept as the button pressed by the user before we finished the dialog)
-            if(TextSystem_IsButton2Focused_from_arm()) {
+            if(TextSystem_IsButton2Focused()) {
                 // Progress dialog on the sub screen
                 int blend_flag_top = true; // Same as above
                 int blend_flag_sub = true;
                 int fade_in_start_y = TextSystem_FadeY_80;
                 int fade_out_end_y = TextSystem_FadeY_160;
                 int enable_progress_anim = true; // Whether to show the rolling-wheel progress sprite/animation
-                TextSystem_DisplayProgressDialog_from_arm(progress2_str, blend_flag_top, blend_flag_sub, fade_in_start_y, fade_out_end_y, enable_progress_anim);
+                TextSystem_DisplayProgressDialog(progress2_str, blend_flag_top, blend_flag_sub, fade_in_start_y, fade_out_end_y, enable_progress_anim);
                 g_Status = 2;
             }
             else {
@@ -108,7 +108,7 @@ void CustomScene_Update(SceneExecutionContext *ctx, u32 frame_count) {
                 int fade_out_end_y = TextSystem_FadeY_160;
                 int enable_top_progress_anim = true; // Now we could show the wheel animation on BOTH screens at the same time (nice, MKDS devs)
                 int enable_sub_progress_anim = true;
-                TextSystem_DisplayProgressDialog_TopScreen_from_arm(progress1_str, blend_flag_top, blend_flag_sub, fade_in_start_y, fade_out_end_y, enable_top_progress_anim, enable_sub_progress_anim);
+                TextSystem_DisplayProgressDialog_TopScreen(progress1_str, blend_flag_top, blend_flag_sub, fade_in_start_y, fade_out_end_y, enable_top_progress_anim, enable_sub_progress_anim);
                 g_Status = 3;
             }
         }
@@ -165,7 +165,7 @@ void CustomScene_Update(SceneExecutionContext *ctx, u32 frame_count) {
     }
     else if(g_Status == 6) {
         // I'm not sure if these fade in/out values are intended, or are a non-reachable limit (they make the dialog violently shake :P)
-        TextSystem_DisplayProgressDialog_TopScreen_from_arm(case2_str, true, true, TextSystem_FadeY_255, TextSystem_FadeY_255, true, false);
+        TextSystem_DisplayProgressDialog_TopScreen(case2_str, true, true, TextSystem_FadeY_255, TextSystem_FadeY_255, true, false);
         g_FrameCounter = 0;
         g_Status = 7;
     }
@@ -178,13 +178,13 @@ void CustomScene_Update(SceneExecutionContext *ctx, u32 frame_count) {
         }
     }
 
-    NavigationContext_OnSceneUpdate_from_arm();
+    NavigationContext_OnSceneUpdate();
 }
 
 void CustomScene_Vblank(SceneExecutionContext *ctx, u32 frame_count) {
     DebugPrintf("Custom scene vblank\n");
 
-    NavigationContext_OnSceneVblank_from_arm();
+    NavigationContext_OnSceneVblank();
 }
 
 void CustomScene_Finalize(SceneExecutionContext *ctx) {
@@ -194,7 +194,7 @@ void CustomScene_Finalize(SceneExecutionContext *ctx) {
         g_Status = 6;
     }
 
-    DisposeNavigationContext_from_arm();
+    DisposeNavigationContext();
 }
 
 static const SceneInfo g_CustomSceneInfo = {

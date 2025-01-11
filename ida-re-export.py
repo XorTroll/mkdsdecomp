@@ -17,20 +17,6 @@ from datetime import datetime
 
 TAB = "    "
 
-def gen_symbols_x(out_file):
-    with open(out_file, "w") as f:
-        for func_ea in idautils.Functions():
-            func_name = ida_funcs.get_func_name(func_ea)
-            f.write(f"{func_name} = 0x{func_ea:08X};\n")
-
-        f.write("\n")
-
-        for (ea, name) in idautils.Names():
-            if name.startswith("g_"):
-                f.write(f"{name} = 0x{ea:08X};\n")
-
-    print(f"Done, exported symbols to '{out_file}'")
-
 def is_thumb_mode(func_ea):
     func = idaapi.get_func(func_ea)
     if not func:
@@ -45,6 +31,24 @@ def is_thumb_mode(func_ea):
         return False
 
     return flags == 1
+
+def gen_symbols_x(out_file):
+    with open(out_file, "w") as f:
+        for func_ea in idautils.Functions():
+            func_name = ida_funcs.get_func_name(func_ea)
+
+            if is_thumb_mode(func_ea):
+                func_name += "_from_thumb"
+
+            f.write(f"{func_name} = 0x{func_ea:08X};\n")
+
+        f.write("\n")
+
+        for (ea, name) in idautils.Names():
+            if name.startswith("g_"):
+                f.write(f"{name} = 0x{ea:08X};\n")
+
+    print(f"Done, exported symbols to '{out_file}'")
 
 BASE_TYPES = [
     "int",
@@ -273,29 +277,29 @@ def export_all_to_header(out_types_header_file, out_syms_header_file, out_aliase
                 function_name = ida_funcs.get_func_name(func_ea)
                 func_sig = ida_typeinf.print_tinfo("", 0, 0, ida_typeinf.PRTYPE_1LINE, func_type, function_name, "")
 
+                thumb_function_name = f"{function_name}_from_thumb"
+                thumb_func_sig = ida_typeinf.print_tinfo("", 0, 0, ida_typeinf.PRTYPE_1LINE, func_type, thumb_function_name, "")
+
                 is_thumb = is_thumb_mode(func_ea)
                 mode = "[THUMB]" if is_thumb else "[ARM]"
 
                 f.write(f"/* off 0x{func_ea:08X} {mode} */\n")
 
                 if is_thumb:
-                    f.write(f"{func_sig} __thumb;\n")
+                    f.write(f"{thumb_func_sig} __thumb;\n")
                 else:
                     f.write(f"{func_sig};\n")
 
                 if is_thumb:
-                    alter_function_name = f"{function_name}_from_arm"
-                    alter_func_sig = ida_typeinf.print_tinfo("", 0, 0, ida_typeinf.PRTYPE_1LINE, func_type, alter_function_name, "")
+                    asm_f.write(f"BEGIN_ASM_FN {function_name}\n")
 
-                    asm_f.write(f"BEGIN_ASM_FN {alter_function_name}\n")
-
-                    asm_f.write(f"{TAB}ldr r12, ={function_name}\n")
+                    asm_f.write(f"{TAB}ldr r12, ={thumb_function_name}\n")
                     asm_f.write(f"{TAB}orr r12, r12, #1\n")
                     asm_f.write(f"{TAB}bx r12\n")
 
                     asm_f.write(f"\n")
 
-                    f.write(f"{alter_func_sig}; /* wrapper defined in ASM */\n")
+                    f.write(f"{func_sig}; /* wrapper defined in ASM */\n")
 
                 f.write("\n")
             
