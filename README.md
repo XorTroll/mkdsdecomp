@@ -23,11 +23,13 @@ While the long-term goal of this project is to 100% document and understand it, 
 
 <img src="tools/save-editor/screenshots/5.png" alt="drawing" width="75%"/>
 
-> Screenshots of the [online save editor](https://xortroll.github.io/mkdsdecomp/)
+> Screenshots of the [online save editor](https://xortroll.github.io/mkdsdecomp/save-editor/)
 
 ## Decompilation progress
 
 Progress can be tracked in some way by the generated [headers](re-export/include) and [symbols](re-export/mkds-eu-decomp-symbols.x), since all unknown types and functions are slowly being named and documented as they are better understood, and since I cannot just push my IDA database :P
+
+I am slowly putting together a [documentation](https://xortroll.github.io/mkdsdecomp/) of the understood game parts, which shows more in-depth details of game logic. You may build it yourself, it's made using [MkDocs](https://www.mkdocs.org/) and the [Material theme](https://squidfunk.github.io/mkdocs-material/).
 
 ## Tools (fun stuff)
 
@@ -35,7 +37,7 @@ While the game is not fully decompiled, we can still have some fun and get somet
 
 ### Save editor
 
-Reversing [save-data formats and encryption/decryption](tools/common) allowed me to create an almost fully-featured [online Mario Kart DS save editor](https://xortroll.github.io/mkdsdecomp/):
+Reversing [save-data formats and encryption/decryption](tools/common) allowed me to create an almost fully-featured [online Mario Kart DS save editor](https://xortroll.github.io/mkdsdecomp/save-editor/):
 
 <img src="tools/save-editor/screenshots/0.png" alt="drawing"/>
 <img src="tools/save-editor/screenshots/1.png" alt="drawing"/>

@@ -13,7 +13,7 @@ import os
 import shutil
 from datetime import datetime
 
-# Script used with my IDA database to export/generate generate headers, symbols and wrapper ASM files, all ready for some fun ASM hacking
+# Script used with my IDA database to export/generate generate headers, symbols and wrapper ASM files, all ready for some fun ASM hacking ;)
 
 TAB = "    "
 
@@ -299,7 +299,8 @@ def export_all_to_header(out_types_header_file, out_syms_header_file, out_aliase
 
                     asm_f.write(f"\n")
 
-                    f.write(f"{func_sig}; /* wrapper defined in ASM */\n")
+                    f.write(f"/* off 0x{func_ea:08X} [THUMB, ARM ASM wrapper] */\n")
+                    f.write(f"{func_sig};\n")
 
                 f.write("\n")
             

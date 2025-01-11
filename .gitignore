@@ -10,4 +10,5 @@ build-gen/
 *.elf
 *.nds
 *.sav
-*.sh
+out/
+site/

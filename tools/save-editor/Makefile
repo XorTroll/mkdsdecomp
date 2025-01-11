@@ -1,9 +1,8 @@
 
 NAME			:=	save-editor
-OUTPUT_DIR		:=	../../docs
+OUTPUT_DIR		:=	out
 OUTPUT			:=	$(NAME)
 INDEX_HTML		:=	source/index.html
-FAVICON			:= 	favicon.ico
 INCLUDE			:=	-Iinclude -I../common/include
 SOURCES			:=	$(shell find $(CURDIR)/source/ -type f -name "*.cpp") \
 					$(shell find $(CURDIR)/../common/source/ -type f -name "*.cpp")
@@ -28,7 +27,6 @@ $(OUTPUT): $(SOURCES)
 	mkdir -p $(OUTPUT_DIR)
 	$(CXX) $(SOURCES) $(CXX_FLAGS) -o $(OUTPUT_DIR)/$(OUTPUT).js $(LIBS) $(CXX_EMS_FLAGS) --preload-file $(ASSETS) -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends $(INCLUDE)
 	cp $(INDEX_HTML) $(OUTPUT_DIR)/index.html
-	cp $(FAVICON) $(OUTPUT_DIR)/favicon.ico
 
 clean:
 	rm -rf $(OUTPUT_DIR)
