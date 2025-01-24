@@ -909,10 +909,10 @@ namespace {
             ImGui::Begin("About this save editor", &g_DisplayAboutWindow);
 
             if(ImGui::Button("GitHub")) {
-                OpenUrl("https://github.com/XorTroll/mkdsdecomp");
+                OpenUrl("https://github.com/XorTroll/mkds-re");
             }
             ImGui::SameLine();
-            ImGui::TextWrapped("part of my Mario Kart DS decompilation/documentation work");
+            ImGui::TextWrapped("part of my Mario Kart DS reverse-engineering work");
 
             ImGui::Separator();
 

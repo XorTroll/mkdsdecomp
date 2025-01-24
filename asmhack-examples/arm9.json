@@ -27,5 +27,5 @@
     ],
     
     "arenaLo": "0x0200F01C",
-    "symbols": "../re-export/mkds-eu-decomp-symbols.x"
+    "symbols": "../re-export/mkds-eu-symbols.x"
 }

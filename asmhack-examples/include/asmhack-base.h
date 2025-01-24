@@ -1,7 +1,7 @@
 #ifndef ASMHACK_BASE_H
 #define ASMHACK_BASE_H
 
-#include <mkds-eu-decomp.h>
+#include <mkds-eu.h>
 #include <debug.h>
 
 #include <stddef.h>

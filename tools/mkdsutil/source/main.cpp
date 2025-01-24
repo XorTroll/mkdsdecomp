@@ -3,6 +3,7 @@
 #include <mk/save/save_Format.hpp>
 #include <cstdio>
 #include <bitset>
+#include <sstream>
 
 using namespace mk;
 
@@ -56,6 +57,26 @@ namespace {
         }
     }
 
+    bool ParseRawRgb(const std::string &rgb_fmt, RgbColor &out_clr) {
+        std::stringstream ss(rgb_fmt);
+        char delimiter;
+
+        u32 r;
+        u32 g;
+        u32 b;
+        if((ss >> r >> delimiter) && (delimiter == ',') && (ss >> g >> delimiter) && (delimiter == ',') && (ss >> b) && ss.eof()) {
+            out_clr.r = r & 0xFF;
+            out_clr.g = g & 0xFF;
+            out_clr.b = b & 0xFF;
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    // Just ignore alpha bit in XBGR-1555...
+
     void ConvertToRgb(const gfx::xbgr1555::Color &clr, RgbColor &out_clr) {
         out_clr.r = (int)(((float)clr.clr.r / 31.0) * 255.0) & 0xFF;
         out_clr.g = (int)(((float)clr.clr.g / 31.0) * 255.0) & 0xFF;
@@ -66,6 +87,7 @@ namespace {
         out_clr.clr.r = (int)(((float)clr.r / 255.0) * 31.0);
         out_clr.clr.g = (int)(((float)clr.g / 255.0) * 31.0);
         out_clr.clr.b = (int)(((float)clr.b / 255.0) * 31.0);
+        out_clr.clr.x = 1;
     }
 
     bool ReadSaveDataFrom(const std::string &save_path, const bool is_enc, mk::save::SaveData &out_save_data, size_t &out_save_data_size) {
@@ -85,6 +107,51 @@ namespace {
         out_save_data_size = save_data_size;
         delete[] enc_save_data;
         return true;
+    }
+
+    //////////////////////////
+
+    void Test(const std::string &in, const std::string &out) {
+        mk::save::SaveData save_data;
+        size_t save_data_size;
+        if(!ReadSaveDataFrom(in, true, save_data, save_data_size)) {
+            return;
+        }
+
+        save_data.header.profile_info.friend_code_2.profile_id = 0;
+        save_data.header.profile_info.friend_code_2.unk_and_flags = 0;
+        save_data.header.profile_info.friend_code_2.crc_checksum = 0;
+
+        save_data.header.profile_info.profile_id = 0;
+        save_data.header.profile_info.flags = 1;
+
+        auto o_save_data = new u8[save_data_size]();
+        save::WriteSaveData(save_data, o_save_data, true);
+
+        if(!WriteToFile(out, o_save_data, save_data_size)) {
+            std::cerr << "Unable to write decrypted save data..." << std::endl;
+            delete[] o_save_data;
+            return;
+        }
+
+        delete[] o_save_data;
+
+        std::cout << "Done test" << std::endl;
+    }
+
+    void PrintColor(const std::string &raw_clr) {
+        RgbColor clr_rgb;
+        gfx::xbgr1555::Color clr_1555;
+        if(ParseRawRgb(raw_clr, clr_rgb)) {
+            // It's RGB
+            ConvertFromRgb(clr_rgb, clr_1555);
+        }
+        else {
+            std::cout << "Invalid color format! options: r,g,b (no spaces, like 255,0,255)" << std::endl;
+        }
+
+        std::cout << "> RGB-888: " << (u32)clr_rgb.r << ", " << (u32)clr_rgb.g << ", " << (u32)clr_rgb.b << std::endl;
+        std::cout << "> RGB-555: " << (u32)clr_1555.clr.r << ", " << (u32)clr_1555.clr.g << ", " << (u32)clr_1555.clr.b << " --> raw = 0x" << std::hex << clr_1555.raw_val << std::dec << std::endl;
     }
 
     void PrintSaveData(const std::string &dec_save_path) {
@@ -175,7 +242,7 @@ int main(int argc, char **argv) {
 
     args::Group commands(parser, "Commands:", args::Group::Validators::Xor);
 
-    args::Command clr(commands, "clr", "Converts a color between formats (XBGR-1555 and RGB-888)");
+    args::Command clr(commands, "clr", "Converts and prints a given color in both formats (BGR-555 and RGB-888)");
     args::Group clr_required(clr, "", args::Group::Validators::All);
     args::ValueFlag<std::string> clr_color(clr_required, "color", "Input color", {'i', "in"});
 
@@ -193,6 +260,11 @@ int main(int argc, char **argv) {
     args::ValueFlag<std::string> save_enc_dec_save_file(save_enc_required, "dec_save_file", "Input decrypted save file", {'i', "in"});
     args::ValueFlag<std::string> save_enc_enc_save_file(save_enc_required, "enc_save_file", "Output encrypted save file", {'o', "out"});
 
+    args::Command test(commands, "test", "Test");
+    args::Group test_r(test, "", args::Group::Validators::All);
+    args::ValueFlag<std::string> test_i(test_r, "in", "Input", {'i', "in"});
+    args::ValueFlag<std::string> test_o(test_r, "out", "Output", {'o', "out"});
+
     try {
         parser.ParseCLI(argc, argv);
     }
@@ -202,10 +274,16 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    if(clr) {
-        const auto color = clr_color.Get();
+    if(test) {
+        const auto i = test_i.Get();
+        const auto o = test_o.Get();
 
-        // TODO: color parsing and conversion
+        Test(i, o);
+    }
+    else if(clr) {
+        const auto raw_clr = clr_color.Get();
+
+        PrintColor(raw_clr);
     }
     else if(save_info) {
         const auto dec_save_file = save_info_dec_save_file.Get();
